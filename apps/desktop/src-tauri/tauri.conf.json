@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SyncPlay",
+  "version": "0.1.0",
+  "identifier": "app.syncplay.desktop",
+  "build": {
+    "frontendDist": "../../web/out"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "SyncPlay",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 380,
+        "minHeight": 640,
+        "backgroundColor": "#06070a",
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/icon.png"]
+  }
+}

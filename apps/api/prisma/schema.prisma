@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  devices       Device[]
+  otpCodes      OtpCode[]
+  refreshTokens RefreshToken[]
+  activities    ActivityLog[]
+  hostedRooms   Room[]
+}
+
+model Device {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  platform       String
+  appVersion     String?
+  socketId       String?
+  isOnline       Boolean  @default(false)
+  networkQuality String   @default("unknown")
+  pingMs         Int?
+  batteryLevel   Int?
+  lastSeenAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  refreshTokens RefreshToken[]
+  activities    ActivityLog[]
+
+  @@index([userId])
+}
+
+model OtpCode {
+  id         String    @id @default(uuid())
+  email      String
+  codeHash   String
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String
+  device    Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Room {
+  code         String   @id
+  hostUserId   String
+  host         User     @relation(fields: [hostUserId], references: [id], onDelete: Cascade)
+  name         String?
+  createdAt    DateTime @default(now())
+  lastActiveAt DateTime @updatedAt
+
+  mediaSession MediaSession?
+  activities   ActivityLog[]
+
+  @@index([hostUserId])
+}
+
+model MediaSession {
+  id                String   @id @default(uuid())
+  roomCode          String   @unique
+  room              Room     @relation(fields: [roomCode], references: [code], onDelete: Cascade)
+  trackId           String?
+  mediaType         String?
+  title             String?
+  subtitle          String?
+  artworkUrl        String?
+  sourceUrl         String?
+  durationMs        Int      @default(0)
+  state             String   @default("idle")
+  anchorPositionMs  Int      @default(0)
+  anchorServerTime  DateTime @default(now())
+  playbackRate      Float    @default(1)
+  volume            Float    @default(1)
+  updatedByDeviceId String?
+  updatedAt         DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  roomCode  String?
+  room      Room?    @relation(fields: [roomCode], references: [code], onDelete: Cascade)
+  type      String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([roomCode, createdAt])
+}

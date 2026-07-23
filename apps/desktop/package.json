@@ -1,0 +1,14 @@
+{
+  "name": "@syncplay/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SyncPlay desktop shell (Tauri) — wraps the static export of apps/web.",
+  "scripts": {
+    "build:web-export": "npm run build --workspace=apps/web -- --config next.config.capacitor.js",
+    "dev": "tauri dev",
+    "build": "npm run build:web-export && tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.4"
+  }
+}
