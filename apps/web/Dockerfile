@@ -14,6 +14,7 @@ COPY packages/shared packages/shared
 COPY apps/web apps/web
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV BUILD_STANDALONE=true
 RUN npm run build --workspace=packages/shared
 RUN npm run build --workspace=apps/web
 
