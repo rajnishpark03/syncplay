@@ -1,10 +1,11 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { createHash, randomInt } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { EmailService } from '../email/email.service';
 import { DeviceInputDto } from './dto/verify-otp.dto';
 
 export interface AuthTokens {
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly activity: ActivityService,
+    private readonly email: EmailService,
   ) {}
 
   async requestOtp(email: string) {
@@ -52,9 +54,15 @@ export class AuthService {
       return { sent: true, devCode: code, expiresInSeconds: ttlSeconds };
     }
 
-    // Production path: plug a transactional email provider here (Resend/SES/SMTP).
-    // Left intentionally unimplemented — see docs/DEPLOYMENT.md for wiring instructions.
-    this.logger.log(`OTP requested for ${normalizedEmail}, would be emailed in production mode`);
+    // Production path: email the code via SMTP. If the email fails to send we
+    // surface a clear error rather than silently pretending it worked, so the
+    // user isn't left waiting for a code that will never arrive.
+    try {
+      await this.email.sendOtp(normalizedEmail, code, ttlSeconds);
+    } catch (err) {
+      this.logger.error(`Failed to send OTP email to ${normalizedEmail}`, err as Error);
+      throw new ServiceUnavailableException('Could not send the verification email, please try again shortly');
+    }
     return { sent: true, expiresInSeconds: ttlSeconds };
   }
 

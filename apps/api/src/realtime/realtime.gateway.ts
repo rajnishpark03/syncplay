@@ -32,6 +32,7 @@ import {
   VoiceSignalPayload,
 } from '@syncplay/shared';
 import { WsAuthService, AuthenticatedSocket } from '../auth/guards/ws-jwt.guard';
+import { resolveCorsOrigin } from '../config/cors';
 import { SyncService } from '../sync/sync.service';
 import { VoiceService } from '../voice/voice.service';
 import { DevicesService } from '../devices/devices.service';
@@ -39,7 +40,7 @@ import { ActivityService } from '../activity/activity.service';
 import { RoomsService } from '../rooms/rooms.service';
 import { RoomPresenceService } from '../rooms/room-presence.service';
 
-@WebSocketGateway({ cors: { origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000', credentials: true } })
+@WebSocketGateway({ cors: { origin: resolveCorsOrigin(), credentials: true } })
 export class RealtimeGateway {
   private readonly logger = new Logger(RealtimeGateway.name);
 

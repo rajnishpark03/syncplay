@@ -5,13 +5,14 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { RedisIoAdapter } from './realtime/redis-io.adapter';
+import { resolveCorsOrigin } from './config/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: false });
   const config = app.get(ConfigService);
 
   app.enableCors({
-    origin: config.get('cors.origin'),
+    origin: resolveCorsOrigin(),
     credentials: true,
   });
 
