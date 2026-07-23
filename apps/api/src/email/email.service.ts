@@ -4,12 +4,16 @@ import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
 /**
- * Sends transactional email (currently just the login OTP) over SMTP.
+ * Sends transactional email (currently just the login OTP).
  *
- * Works with any SMTP provider; the zero-cost default is a Gmail account with
- * an App Password (SMTP_HOST=smtp.gmail.com, SMTP_PORT=587). The transporter
- * is created lazily so the app boots fine in dev mode when no SMTP creds are
- * configured.
+ * Two backends, chosen automatically:
+ *  - Resend (HTTP API) if RESEND_API_KEY is set — preferred in the cloud
+ *    because it uses HTTPS (port 443), which hosts like Render's free tier
+ *    don't block. Gmail SMTP (ports 587/465) IS blocked there.
+ *  - SMTP (nodemailer) otherwise — great for local dev / self-hosting.
+ *
+ * Timeouts are set on SMTP so a blocked/slow port fails fast instead of
+ * hanging the login request.
  */
 @Injectable()
 export class EmailService {
@@ -17,6 +21,41 @@ export class EmailService {
   private transporter: Transporter | null = null;
 
   constructor(private readonly config: ConfigService) {}
+
+  async sendOtp(to: string, code: string, ttlSeconds: number): Promise<void> {
+    const minutes = Math.round(ttlSeconds / 60);
+    const from = this.config.get<string>('email.from')!;
+    const subject = `Your SyncPlay code: ${code}`;
+    const text = `Your SyncPlay verification code is ${code}. It expires in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
+    const html = this.otpHtml(code, minutes);
+
+    const resendKey = this.config.get<string>('email.resendApiKey');
+    if (resendKey) {
+      await this.sendViaResend(resendKey, { from, to, subject, text, html });
+      this.logger.log(`OTP email sent to ${to} via Resend`);
+      return;
+    }
+
+    const transporter = this.getTransporter();
+    if (!transporter) throw new Error('Email transport not configured');
+    await transporter.sendMail({ from, to, subject, text, html });
+    this.logger.log(`OTP email sent to ${to} via SMTP`);
+  }
+
+  private async sendViaResend(
+    apiKey: string,
+    msg: { from: string; to: string; subject: string; text: string; html: string },
+  ): Promise<void> {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: msg.from, to: [msg.to], subject: msg.subject, text: msg.text, html: msg.html }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Resend API error ${res.status}: ${body}`);
+    }
+  }
 
   private getTransporter(): Transporter | null {
     if (this.transporter) return this.transporter;
@@ -33,30 +72,13 @@ export class EmailService {
     this.transporter = nodemailer.createTransport({
       host,
       port,
-      secure: port === 465, // 465 = implicit TLS, 587 = STARTTLS
+      secure: port === 465,
       auth: { user, pass },
+      connectionTimeout: 12_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 12_000,
     });
     return this.transporter;
-  }
-
-  async sendOtp(to: string, code: string, ttlSeconds: number): Promise<void> {
-    const transporter = this.getTransporter();
-    if (!transporter) {
-      throw new Error('Email transport not configured');
-    }
-
-    const minutes = Math.round(ttlSeconds / 60);
-    const from = this.config.get<string>('email.from');
-
-    await transporter.sendMail({
-      from,
-      to,
-      subject: `Your SyncPlay code: ${code}`,
-      text: `Your SyncPlay verification code is ${code}. It expires in ${minutes} minute${minutes === 1 ? '' : 's'}.`,
-      html: this.otpHtml(code, minutes),
-    });
-
-    this.logger.log(`OTP email sent to ${to}`);
   }
 
   private otpHtml(code: string, minutes: number): string {
