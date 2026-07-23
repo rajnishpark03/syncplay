@@ -14,7 +14,9 @@ services:
     plan: free
     region: singapore
     branch: main
-    buildCommand: npm install && npm run build:shared && npm run prisma:generate --workspace=apps/api && npm run build:api
+    # --include=dev is required because NODE_ENV=production otherwise makes npm
+    # skip devDependencies (typescript, @nestjs/cli, prisma) that the build needs.
+    buildCommand: npm install --include=dev && npm run build:shared && npm run prisma:generate --workspace=apps/api && npm run build:api
     startCommand: npm run prisma:deploy --workspace=apps/api && node apps/api/dist/main.js
     healthCheckPath: /health
     envVars:
