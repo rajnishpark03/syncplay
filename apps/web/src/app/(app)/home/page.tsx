@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { GlassCard } from '@/components/ui/glass-card';
 import { StatusDot } from '@/components/ui/status-dot';
 import { CreateJoinRoom } from '@/components/room/create-join-room';
+import { RoomCodeChip } from '@/components/room/room-code-chip';
 import { useAuth } from '@/providers/auth-provider';
 import { useSync } from '@/providers/sync-provider';
 import { useRoomStore } from '@/lib/room-store';
@@ -49,14 +50,17 @@ export default function HomePage() {
 
       {currentRoom ? (
         <GlassCard hoverable={false} className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs text-white/40">Active session {currentRoom.name ? `· ${currentRoom.name}` : ''}</p>
-            <p className="text-xl font-bold tracking-[0.2em] text-accent-soft sm:text-2xl sm:tracking-[0.25em]">{currentRoom.code}</p>
-            <p className="mt-1 text-xs text-white/40">
-              {members.length} device{members.length === 1 ? '' : 's'} connected
-            </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-white/35">You&rsquo;re in</p>
+            <h2 className="truncate text-lg font-semibold sm:text-xl">{currentRoom.name ?? 'Your session'}</h2>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <RoomCodeChip code={currentRoom.code} />
+              <span className="text-xs text-white/35">
+                {members.length} device{members.length === 1 ? '' : 's'} here
+              </span>
+            </div>
           </div>
-          <button className="btn-secondary text-xs" onClick={leaveRoom}>
+          <button className="btn-secondary flex-shrink-0 text-xs" onClick={leaveRoom}>
             Leave
           </button>
         </GlassCard>

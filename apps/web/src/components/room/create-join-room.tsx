@@ -13,6 +13,7 @@ export function CreateJoinRoom({ compact = false }: { compact?: boolean }) {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [createdCode, setCreatedCode] = useState('');
+  const [createdName, setCreatedName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const setRoom = useRoomStore((s) => s.setRoom);
@@ -25,6 +26,7 @@ export function CreateJoinRoom({ compact = false }: { compact?: boolean }) {
       const room = await api.createRoom(name || undefined);
       setRoom(room);
       setCreatedCode(room.code);
+      setCreatedName(room.name ?? '');
       setMode('created');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not create room');
@@ -95,10 +97,13 @@ export function CreateJoinRoom({ compact = false }: { compact?: boolean }) {
               {mode === 'create' && (
                 <>
                   <h3 className="mb-1 font-semibold">Create a room</h3>
-                  <p className="mb-4 text-xs text-white/40">You&rsquo;ll get a 6-character code to share with anyone you want to sync with.</p>
+                  <p className="mb-4 text-xs text-white/40">
+                    You&rsquo;ll get a 6-character code to share. Leave the name blank and we&rsquo;ll pick a romantic one
+                    for you.
+                  </p>
                   <input
                     className="input-field"
-                    placeholder="Session name (optional)"
+                    placeholder="Name it, or leave blank for a surprise ✨"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     autoFocus
@@ -141,10 +146,10 @@ export function CreateJoinRoom({ compact = false }: { compact?: boolean }) {
 
               {mode === 'created' && (
                 <>
-                  <h3 className="mb-1 font-semibold">Room created 🎉</h3>
+                  <h3 className="mb-1 font-semibold">{createdName || 'Room created'} 💕</h3>
                   <p className="mb-4 text-xs text-white/40">Share this code — anyone who enters it joins your session instantly.</p>
                   <div className="rounded-2xl bg-accent/10 py-6 text-center">
-                    <p className="text-4xl font-bold tracking-[0.3em] text-accent-soft">{createdCode}</p>
+                    <p className="text-3xl font-bold tracking-[0.25em] text-accent-soft sm:text-4xl sm:tracking-[0.3em]">{createdCode}</p>
                   </div>
                   <div className="mt-4 flex gap-3">
                     <button className="btn-secondary flex-1" onClick={copyCode}>

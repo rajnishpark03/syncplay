@@ -7,6 +7,26 @@ import { PrismaService } from '../prisma/prisma.service';
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CODE_LENGTH = 6;
 
+/**
+ * Rooms get a warm, romantic name so a session reads like "Moonlight Cove"
+ * instead of a raw code. The code is still what people share to join — the
+ * name is purely how the room presents itself in the UI.
+ */
+const NAME_ADJECTIVES = [
+  'Moonlit', 'Velvet', 'Golden', 'Starlit', 'Cosy', 'Dreamy', 'Amber', 'Rosy',
+  'Secret', 'Hushed', 'Twilight', 'Sunlit', 'Silver', 'Honey', 'Midnight', 'Softly',
+];
+const NAME_NOUNS = [
+  'Orbit', 'Cove', 'Balcony', 'Rooftop', 'Lantern', 'Hideaway', 'Sofa', 'Window',
+  'Terrace', 'Harbour', 'Meadow', 'Bonfire', 'Garden', 'Cabin', 'Nook', 'Skyline',
+];
+
+function randomRomanticName(): string {
+  const adjective = NAME_ADJECTIVES[Math.floor(Math.random() * NAME_ADJECTIVES.length)];
+  const noun = NAME_NOUNS[Math.floor(Math.random() * NAME_NOUNS.length)];
+  return `${adjective} ${noun}`;
+}
+
 @Injectable()
 export class RoomsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -18,7 +38,8 @@ export class RoomsService {
       if (existing) continue;
 
       const room = await this.prisma.room.create({
-        data: { code, hostUserId, name },
+        // No name given → pick a fresh romantic one for this session.
+        data: { code, hostUserId, name: name?.trim() || randomRomanticName() },
         include: { host: true },
       });
       return this.toDto(room);

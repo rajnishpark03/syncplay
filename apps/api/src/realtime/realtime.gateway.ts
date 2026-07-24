@@ -76,6 +76,7 @@ export class RealtimeGateway {
 
     const device = await this.devicesService.findById(authed.data.deviceId);
     authed.data.deviceName = device?.name;
+    authed.data.platform = device?.platform;
     await this.devicesService.markOnline(authed.data.deviceId, client.id);
 
     this.logger.log(`Device ${authed.data.deviceId} connected (${authed.data.email})`);
@@ -114,9 +115,8 @@ export class RealtimeGateway {
 
     client.data.roomCode = roomCode;
     await client.join(this.channel(roomCode));
-    await this.roomPresence.join(roomCode, client.data.deviceId);
 
-    const members = await this.roomPresence.members(roomCode);
+    const members = await this.roomPresence.members(this.server, roomCode);
     const state = await this.syncService.getState(roomCode);
 
     client.emit(ServerEvents.ROOM_JOINED, { room, members });
@@ -125,7 +125,7 @@ export class RealtimeGateway {
     client.to(this.channel(roomCode)).emit(ServerEvents.ROOM_MEMBER_JOINED, {
       deviceId: client.data.deviceId,
       deviceName: client.data.deviceName ?? 'Device',
-      platform: (await this.devicesService.findById(client.data.deviceId))?.platform ?? 'web',
+      platform: client.data.platform ?? 'web',
       userId: client.data.userId,
       isHost: client.data.userId === room.hostUserId,
     });
@@ -149,7 +149,6 @@ export class RealtimeGateway {
 
   private async leaveRoom(client: AuthenticatedSocket, roomCode: string, reason: 'left' | 'disconnected' | 'switched room') {
     client.leave(this.channel(roomCode));
-    await this.roomPresence.leave(roomCode, client.data.deviceId);
     await this.voiceService.leave(roomCode, client.data.deviceId);
 
     client.to(this.channel(roomCode)).emit(ServerEvents.ROOM_MEMBER_LEFT, { deviceId: client.data.deviceId });

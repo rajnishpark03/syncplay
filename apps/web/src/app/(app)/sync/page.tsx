@@ -9,6 +9,8 @@ import { ScreenSharePanel } from '@/components/sync/screen-share-panel';
 import { CameraPanel } from '@/components/sync/camera-panel';
 import { useSync } from '@/providers/sync-provider';
 import { usePlayer } from '@/providers/player-provider';
+import { useRoomStore } from '@/lib/room-store';
+import { RoomCodeChip } from '@/components/room/room-code-chip';
 import { extractYouTubeId, fetchYouTubeOEmbed } from '@/lib/youtube';
 import type { MediaProvider, MediaType, TrackInfo } from '@orbit/shared';
 
@@ -64,6 +66,7 @@ function SyncSession() {
   const [form, setForm] = useState<LoaderForm>(EMPTY_FORM);
   const otherDeviceIds = members.filter((m) => m.deviceId !== deviceId).map((m) => m.deviceId);
   const memberNames = Object.fromEntries(members.map((m) => [m.deviceId, m.deviceName]));
+  const roomName = useRoomStore((state) => state.currentRoom?.name);
 
   function handleTogglePlay() {
     const player = playerRef.current;
@@ -104,9 +107,9 @@ function SyncSession() {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm text-white/40">Room {roomCode}</p>
-          <h1 className="text-2xl font-semibold tracking-tight">Now Playing</h1>
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">{roomName ?? 'Now Playing'}</h1>
+          <RoomCodeChip code={roomCode} />
         </div>
         <SyncHealthBadge connected={connected} latencyMs={syncHealth.latencyMs} quality={syncHealth.quality} />
       </header>

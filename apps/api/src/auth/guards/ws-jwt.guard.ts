@@ -9,6 +9,7 @@ export interface AuthenticatedSocket extends Socket {
     deviceId: string;
     /** Filled in by the gateway right after auth, from the Device row. */
     deviceName?: string;
+    platform?: string;
     /** Set once the device explicitly `room:join`s a room; absent otherwise. */
     roomCode?: string;
   };

@@ -1,46 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { RoomMember } from '@orbit/shared';
-import { RedisService } from '../redis/redis.service';
-import { DevicesService } from '../devices/devices.service';
+import { Server } from 'socket.io';
+import { RoomMember, SOCKET_ROOM_PREFIX } from '@orbit/shared';
 import { RoomsService } from './rooms.service';
 
-/** Tracks which devices are currently connected inside a given room. */
+interface SocketIdentity {
+  deviceId?: string;
+  deviceName?: string;
+  userId?: string;
+  platform?: string;
+}
+
+/**
+ * Who is in a room *right now*.
+ *
+ * Derived from live Socket.IO room membership rather than a separate Redis
+ * set. A side-set has to be cleaned up by hand on every disconnect, and any
+ * missed cleanup (server restart, crash, dropped connection) leaves ghost
+ * members behind — or drops real ones — which is what made screen share and
+ * games think nobody else was there. The socket server already knows exactly
+ * who is connected, and with the Redis adapter `fetchSockets()` covers every
+ * instance, so there is nothing to keep in sync.
+ */
 @Injectable()
 export class RoomPresenceService {
-  constructor(
-    private readonly redis: RedisService,
-    private readonly devicesService: DevicesService,
-    private readonly roomsService: RoomsService,
-  ) {}
+  constructor(private readonly roomsService: RoomsService) {}
 
-  private key(roomCode: string) {
-    return `room:members:${roomCode}`;
+  private channel(roomCode: string) {
+    return `${SOCKET_ROOM_PREFIX}${roomCode}`;
   }
 
-  async join(roomCode: string, deviceId: string) {
-    await this.redis.client.sadd(this.key(roomCode), deviceId);
-  }
-
-  async leave(roomCode: string, deviceId: string) {
-    await this.redis.client.srem(this.key(roomCode), deviceId);
-  }
-
-  async members(roomCode: string): Promise<RoomMember[]> {
-    const [deviceIds, room] = await Promise.all([
-      this.redis.client.smembers(this.key(roomCode)),
-      this.roomsService.findByCode(roomCode),
+  async members(server: Server, roomCode: string): Promise<RoomMember[]> {
+    const [sockets, room] = await Promise.all([
+      server.in(this.channel(roomCode)).fetchSockets(),
+      this.roomsService.findByCode(roomCode).catch(() => null),
     ]);
 
-    const devices = await Promise.all(deviceIds.map((id) => this.devicesService.findById(id)));
+    const byDevice = new Map<string, RoomMember>();
+    for (const socket of sockets) {
+      const data = socket.data as SocketIdentity;
+      if (!data?.deviceId) continue;
+      // A device that reconnected may briefly have two sockets; keep one entry.
+      byDevice.set(data.deviceId, {
+        deviceId: data.deviceId,
+        deviceName: data.deviceName ?? 'Device',
+        platform: (data.platform as RoomMember['platform']) ?? 'web',
+        userId: data.userId ?? '',
+        isHost: Boolean(room && data.userId === room.hostUserId),
+      });
+    }
 
-    return devices
-      .filter((d): d is NonNullable<typeof d> => d !== null)
-      .map((device) => ({
-        deviceId: device.id,
-        deviceName: device.name,
-        platform: device.platform as RoomMember['platform'],
-        userId: device.userId,
-        isHost: device.userId === room.hostUserId,
-      }));
+    return [...byDevice.values()];
   }
 }
