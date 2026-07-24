@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { RoomInfo } from '@syncplay/shared';
+import type { RoomInfo } from '@orbit/shared';
 
 interface RoomState {
   currentRoom: RoomInfo | null;
@@ -16,6 +16,6 @@ export const useRoomStore = create<RoomState>()(
       setRoom: (room) => set({ currentRoom: room }),
       clearRoom: () => set({ currentRoom: null }),
     }),
-    { name: 'syncplay:room' },
+    { name: 'orbit:room' },
   ),
 );

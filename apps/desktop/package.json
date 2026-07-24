@@ -1,8 +1,8 @@
 {
-  "name": "@syncplay/desktop",
+  "name": "@orbit/desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "SyncPlay desktop shell (Tauri) — wraps the static export of apps/web.",
+  "description": "Orbit desktop shell (Tauri) — wraps the static export of apps/web.",
   "scripts": {
     "build:web-export": "BUILD_EXPORT=true npm run build --workspace=apps/web",
     "dev": "tauri dev",

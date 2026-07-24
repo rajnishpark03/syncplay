@@ -12,7 +12,7 @@ import {
   SyncPongPayload,
   SyncHealth,
   TrackInfo,
-} from '@syncplay/shared';
+} from '@orbit/shared';
 import { getSocket } from '@/lib/socket';
 import { getOrCreateDeviceId } from '@/lib/device';
 import { useRoomStore } from '@/lib/room-store';

@@ -53,11 +53,11 @@ export function CreateJoinRoom({ compact = false }: { compact?: boolean }) {
   }
 
   async function shareCode() {
-    const shareText = `Join my SyncPlay session — code: ${createdCode}`;
+    const shareText = `Join my Orbit session — code: ${createdCode}`;
     const nav = navigator as Navigator & { share?: (data: { title?: string; text?: string }) => Promise<void> };
     if (nav.share) {
       try {
-        await nav.share({ title: 'SyncPlay', text: shareText });
+        await nav.share({ title: 'Orbit', text: shareText });
         return;
       } catch {
         // user cancelled share sheet — fall through to clipboard

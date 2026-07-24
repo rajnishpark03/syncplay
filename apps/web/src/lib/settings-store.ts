@@ -24,6 +24,6 @@ export const useSettingsStore = create<SettingsState>()(
       toggle: (key) => set((state) => ({ ...state, [key]: !state[key] })),
       setVoiceQuality: (voiceQuality) => set({ voiceQuality }),
     }),
-    { name: 'syncplay:settings' },
+    { name: 'orbit:settings' },
   ),
 );

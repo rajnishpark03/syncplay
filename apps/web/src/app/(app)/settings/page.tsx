@@ -14,7 +14,7 @@ export default function SettingsPage() {
       </header>
 
       <GlassCard hoverable={false} className="space-y-1">
-        <Row label="Dark Theme" description="SyncPlay is dark-mode only by design">
+        <Row label="Dark Theme" description="Orbit is dark-mode only by design">
           <ToggleSwitch checked readOnly />
         </Row>
         <Row label="Notifications" description="Get notified when your partner connects">
@@ -48,7 +48,7 @@ export default function SettingsPage() {
         </div>
       </GlassCard>
 
-      <p className="text-center text-xs text-white/25">SyncPlay v0.1.0</p>
+      <p className="text-center text-xs text-white/25">Orbit v0.1.0</p>
     </div>
   );
 }

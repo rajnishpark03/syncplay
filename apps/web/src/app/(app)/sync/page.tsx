@@ -9,7 +9,7 @@ import { ScreenSharePanel } from '@/components/sync/screen-share-panel';
 import { CameraPanel } from '@/components/sync/camera-panel';
 import { useSyncEngine } from '@/hooks/use-sync-engine';
 import { extractYouTubeId, fetchYouTubeOEmbed } from '@/lib/youtube';
-import type { MediaProvider, MediaType, TrackInfo } from '@syncplay/shared';
+import type { MediaProvider, MediaType, TrackInfo } from '@orbit/shared';
 
 // Direct <video>/<audio> seeks are effectively instant (local/CDN buffered),
 // so we can hold them to the <100ms sync target. YouTube's IFrame player has
@@ -530,7 +530,7 @@ function MediaLoaderModal({
             {form.provider === 'youtube'
               ? "Played via YouTube's official embedded player — ads may show as they normally would on YouTube."
               : 'Only direct, self-hosted or licensed media URLs are supported here.'}{' '}
-            SyncPlay never bypasses DRM or controls third-party apps directly.
+            Orbit never bypasses DRM or controls third-party apps directly.
           </p>
         </div>
         <div className="mt-5 space-y-2">

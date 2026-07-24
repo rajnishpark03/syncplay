@@ -1,8 +1,8 @@
-# SyncPlay — Architecture
+# Orbit — Architecture
 
 ## Overview
 
-SyncPlay syncs playback and voice across devices using a **shareable room
+Orbit syncs playback and voice across devices using a **shareable room
 code** — a host creates a room (`POST /rooms`), gets a 6-character code, and
 shares it with whoever they want to sync with. Anyone who joins that code
 from any account (not necessarily the same email) is instantly in the same
@@ -100,7 +100,7 @@ use.
 
 ## Officially-supported playback only
 
-SyncPlay plays media through the standard HTML5 `<audio>`/`<video>` element
+Orbit plays media through the standard HTML5 `<audio>`/`<video>` element
 against a direct, self-hosted or licensed media URL you provide. It does
 **not** attempt to control or bypass DRM on third-party apps like Spotify,
 YouTube, or Netflix — those platforms don't expose a public API for remote

@@ -1,4 +1,4 @@
-# Render Blueprint for the SyncPlay backend (NestJS + Socket.IO).
+# Render Blueprint for the Orbit backend (NestJS + Socket.IO).
 #
 # In the Render dashboard: New → Blueprint → connect this repo. Render reads
 # this file and creates the API web service. You still paste in DATABASE_URL
@@ -9,7 +9,7 @@
 # in ~50s on the next request — fine for occasional use by a couple.
 services:
   - type: web
-    name: syncplay-api
+    name: orbit-api
     runtime: node
     plan: free
     region: singapore
@@ -40,7 +40,7 @@ services:
         sync: false
       # Email (Gmail SMTP + App Password) — fill in the dashboard:
       - key: EMAIL_FROM
-        value: "SyncPlay <spyrajnish@gmail.com>"
+        value: "Orbit <spyrajnish@gmail.com>"
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MediaSyncState, PlaybackState, TrackInfo } from '@syncplay/shared';
+import { MediaSyncState, PlaybackState, TrackInfo } from '@orbit/shared';
 import { RedisService } from '../redis/redis.service';
 import { PrismaService } from '../prisma/prisma.service';
 

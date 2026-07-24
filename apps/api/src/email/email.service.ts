@@ -25,8 +25,8 @@ export class EmailService {
   async sendOtp(to: string, code: string, ttlSeconds: number): Promise<void> {
     const minutes = Math.round(ttlSeconds / 60);
     const from = this.config.get<string>('email.from')!;
-    const subject = `Your SyncPlay code: ${code}`;
-    const text = `Your SyncPlay verification code is ${code}. It expires in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
+    const subject = `Your Orbit code: ${code}`;
+    const text = `Your Orbit verification code is ${code}. It expires in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
     const html = this.otpHtml(code, minutes);
 
     // Brevo is preferred when configured: single-sender verification (no
@@ -121,7 +121,7 @@ export class EmailService {
   private otpHtml(code: string, minutes: number): string {
     return `
       <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:440px;margin:0 auto;padding:32px;background:#170a16;border-radius:16px;color:#fff">
-        <h1 style="margin:0 0 8px;font-size:20px">SyncPlay</h1>
+        <h1 style="margin:0 0 8px;font-size:20px">Orbit</h1>
         <p style="margin:0 0 24px;color:#ffffffaa;font-size:14px">Listen &amp; watch together, perfectly in sync.</p>
         <p style="margin:0 0 12px;color:#ffffffcc;font-size:14px">Your verification code is:</p>
         <div style="font-size:34px;font-weight:700;letter-spacing:10px;color:#ff86a9;background:#ffffff0d;border-radius:12px;padding:18px;text-align:center">${code}</div>

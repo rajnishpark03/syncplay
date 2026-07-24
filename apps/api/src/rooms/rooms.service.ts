@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { RoomInfo } from '@syncplay/shared';
+import { RoomInfo } from '@orbit/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
 // Excludes visually-ambiguous characters (0/O, 1/I/L) so a spoken/typed code

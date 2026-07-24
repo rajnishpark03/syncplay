@@ -30,7 +30,7 @@ import {
   VoiceJoinPayload,
   VoiceMuteChangePayload,
   VoiceSignalPayload,
-} from '@syncplay/shared';
+} from '@orbit/shared';
 import { WsAuthService, AuthenticatedSocket } from '../auth/guards/ws-jwt.guard';
 import { resolveCorsOrigin } from '../config/cors';
 import { SyncService } from '../sync/sync.service';

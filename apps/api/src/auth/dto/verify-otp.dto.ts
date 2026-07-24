@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEmail, IsIn, IsOptional, IsString, Length, ValidateNested } from 'class-validator';
-import { Platform } from '@syncplay/shared';
+import { Platform } from '@orbit/shared';
 
 export class DeviceInputDto {
   @ApiProperty({ example: 'a1b2c3d4-...' , description: 'Client-generated, persisted device identifier'})

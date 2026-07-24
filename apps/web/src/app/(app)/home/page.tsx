@@ -9,7 +9,7 @@ import { useAuth } from '@/providers/auth-provider';
 import { useSyncEngine } from '@/hooks/use-sync-engine';
 import { useRoomStore } from '@/lib/room-store';
 import { api } from '@/lib/api';
-import type { ActivityType } from '@syncplay/shared';
+import type { ActivityType } from '@orbit/shared';
 
 const ACTIVITY_ICON: Record<ActivityType, string> = {
   device_connected: '🔗',

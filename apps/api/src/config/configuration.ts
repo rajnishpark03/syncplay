@@ -23,7 +23,7 @@ export default () => ({
   },
   email: {
     provider: process.env.EMAIL_PROVIDER ?? 'smtp',
-    from: process.env.EMAIL_FROM ?? 'SyncPlay <no-reply@syncplay.app>',
+    from: process.env.EMAIL_FROM ?? 'Orbit <no-reply@orbit.app>',
     resendApiKey: process.env.RESEND_API_KEY,
     brevoApiKey: process.env.BREVO_API_KEY,
     smtp: {

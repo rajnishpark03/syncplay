@@ -29,9 +29,9 @@ async function bootstrap() {
   app.useWebSocketAdapter(redisIoAdapter);
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('SyncPlay API')
+    .setTitle('Orbit API')
     .setDescription(
-      'REST + realtime API for SyncPlay — account auth, device linking, and the ' +
+      'REST + realtime API for Orbit — account auth, device linking, and the ' +
         'contracts consumed by the Socket.IO sync/voice gateways. See docs/SOCKET_EVENTS.md ' +
         'for the realtime event contract, which is not expressible in OpenAPI.',
     )
@@ -44,7 +44,7 @@ async function bootstrap() {
   const port = config.get('port') ?? 4000;
   await app.listen(port);
   // eslint-disable-next-line no-console
-  console.log(`SyncPlay API listening on :${port} (docs at /docs)`);
+  console.log(`Orbit API listening on :${port} (docs at /docs)`);
 }
 
 bootstrap();

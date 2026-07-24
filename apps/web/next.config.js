@@ -14,7 +14,7 @@ const isStandalone = process.env.BUILD_STANDALONE === 'true';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@syncplay/shared'],
+  transpilePackages: ['@orbit/shared'],
   output: isExport ? 'export' : isStandalone ? 'standalone' : undefined,
   images: isExport ? { unoptimized: true } : { remotePatterns: [{ protocol: 'https', hostname: '**' }] },
 };

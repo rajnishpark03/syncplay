@@ -1,5 +1,5 @@
-const ACCESS_KEY = 'syncplay:accessToken';
-const REFRESH_KEY = 'syncplay:refreshToken';
+const ACCESS_KEY = 'orbit:accessToken';
+const REFRESH_KEY = 'orbit:refreshToken';
 
 export const tokenStore = {
   get access() {

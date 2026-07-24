@@ -59,7 +59,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-accent to-accent-muted shadow-glow">
             <PlayWave />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">SyncPlay</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Orbit</h1>
           <p className="mt-1 text-sm text-white/50">For two hearts, one moment — perfectly in sync. 💕</p>
         </div>
 

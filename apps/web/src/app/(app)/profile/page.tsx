@@ -32,7 +32,7 @@ export default function ProfilePage() {
       <GlassCard hoverable={false} className="flex items-center gap-4">
         <Avatar name={profile?.name ?? profile?.email ?? '?'} src={profile?.avatarUrl} size={64} />
         <div className="min-w-0">
-          <p className="truncate font-semibold">{profile?.name ?? 'SyncPlay user'}</p>
+          <p className="truncate font-semibold">{profile?.name ?? 'Orbit user'}</p>
           <p className="truncate text-sm text-white/40">{profile?.email}</p>
         </div>
       </GlassCard>

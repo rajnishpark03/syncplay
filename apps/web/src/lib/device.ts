@@ -1,6 +1,6 @@
-import type { Platform } from '@syncplay/shared';
+import type { Platform } from '@orbit/shared';
 
-const DEVICE_ID_KEY = 'syncplay:deviceId';
+const DEVICE_ID_KEY = 'orbit:deviceId';
 
 export function getOrCreateDeviceId(): string {
   if (typeof window === 'undefined') return '';

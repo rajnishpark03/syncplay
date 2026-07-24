@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ClientEvents, ServerEvents, VoicePeerJoinedPayload, VoiceSignalRelayPayload } from '@syncplay/shared';
+import { ClientEvents, ServerEvents, VoicePeerJoinedPayload, VoiceSignalRelayPayload } from '@orbit/shared';
 import { getSocket } from '@/lib/socket';
 import { getOrCreateDeviceId } from '@/lib/device';
 

@@ -13,8 +13,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
  *   npx cap open ios | android
  */
 const config: CapacitorConfig = {
-  appId: 'app.syncplay.mobile',
-  appName: 'SyncPlay',
+  appId: 'app.orbit.mobile',
+  appName: 'Orbit',
   webDir: 'out',
   backgroundColor: '#06070a',
   server: {

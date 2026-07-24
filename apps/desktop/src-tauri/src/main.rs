@@ -3,5 +3,5 @@
 fn main() {
     tauri::Builder::default()
         .run(tauri::generate_context!())
-        .expect("error while running SyncPlay desktop shell");
+        .expect("error while running Orbit desktop shell");
 }

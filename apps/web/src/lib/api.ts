@@ -73,12 +73,12 @@ export const api = {
     }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   me: () => request<{ id: string; email: string; name: string | null; avatarUrl: string | null; createdAt: string }>('/auth/me'),
-  devices: () => request<import('@syncplay/shared').DeviceInfo[]>('/devices'),
-  activity: (limit = 20) => request<import('@syncplay/shared').ActivityEntry[]>(`/activity?limit=${limit}`),
+  devices: () => request<import('@orbit/shared').DeviceInfo[]>('/devices'),
+  activity: (limit = 20) => request<import('@orbit/shared').ActivityEntry[]>(`/activity?limit=${limit}`),
   roomActivity: (code: string, limit = 20) =>
-    request<import('@syncplay/shared').ActivityEntry[]>(`/activity/room/${code}?limit=${limit}`),
-  createRoom: (name?: string) => request<import('@syncplay/shared').RoomInfo>('/rooms', { method: 'POST', body: JSON.stringify({ name }) }),
-  getRoom: (code: string) => request<import('@syncplay/shared').RoomInfo>(`/rooms/${code}`),
+    request<import('@orbit/shared').ActivityEntry[]>(`/activity/room/${code}?limit=${limit}`),
+  createRoom: (name?: string) => request<import('@orbit/shared').RoomInfo>('/rooms', { method: 'POST', body: JSON.stringify({ name }) }),
+  getRoom: (code: string) => request<import('@orbit/shared').RoomInfo>(`/rooms/${code}`),
 };
 
 export { ApiError };

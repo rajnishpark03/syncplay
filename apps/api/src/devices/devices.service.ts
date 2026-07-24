@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DeviceInfo, NetworkQuality } from '@syncplay/shared';
+import { DeviceInfo, NetworkQuality } from '@orbit/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 

@@ -1,5 +1,5 @@
 import { SyncService } from './sync.service';
-import { MediaSyncState } from '@syncplay/shared';
+import { MediaSyncState } from '@orbit/shared';
 
 describe('SyncService.livePositionMs', () => {
   const service = Object.create(SyncService.prototype) as SyncService;

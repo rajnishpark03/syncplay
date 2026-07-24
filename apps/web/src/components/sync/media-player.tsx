@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import type { TrackInfo } from '@syncplay/shared';
+import type { TrackInfo } from '@orbit/shared';
 import { loadYouTubeIframeApi, YTPlayer } from '@/lib/youtube-iframe-api';
 
 export interface MediaPlayerHandle {
@@ -90,7 +90,7 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
         ytPlayerRef.current = new YT.Player(ytContainerRef.current, {
           videoId: track.sourceUrl,
           // controls: 0 hides YouTube's own play/pause bar and title/info
-          // overlay entirely — SyncPlay's own controls below the video are
+          // overlay entirely — Orbit's own controls below the video are
           // the only playback UI shown, matching direct-URL tracks.
           playerVars: { playsinline: 1, controls: 0, disablekb: 1, iv_load_policy: 3, modestbranding: 1, rel: 0, mute: 1 },
           events: {

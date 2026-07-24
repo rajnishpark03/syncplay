@@ -4,7 +4,7 @@ import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 
 export const metadata: Metadata = {
-  title: 'SyncPlay — Listen & Watch Together',
+  title: 'Orbit — Listen & Watch Together',
   description: 'Real-time synchronized playback and voice chat across every device on your account.',
 };
 

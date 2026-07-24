@@ -1,8 +1,8 @@
 {
-  "name": "syncplay",
+  "name": "orbit",
   "private": true,
   "version": "0.1.0",
-  "description": "SyncPlay — real-time Listen Together / Watch Together with synchronized playback and voice chat",
+  "description": "Orbit — real-time Listen Together / Watch Together with synchronized playback and voice chat",
   "workspaces": [
     "apps/*",
     "packages/*"

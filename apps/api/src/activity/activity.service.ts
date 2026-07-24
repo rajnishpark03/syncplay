@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ActivityEntry, ActivityType } from '@syncplay/shared';
+import { ActivityEntry, ActivityType } from '@orbit/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()

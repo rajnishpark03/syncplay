@@ -1,4 +1,4 @@
-# SyncPlay
+# Orbit
 
 Real-time **Listen Together** / **Watch Together** — create a room, share
 the 6-character code with anyone, and every device that joins it stays
@@ -54,7 +54,7 @@ emailed). See `docs/DEPLOYMENT.md` for free-tier hosting, Capacitor
 
 ## What's out of scope by design
 
-SyncPlay plays media through the standard HTML5 `<video>`/`<audio>` element
+Orbit plays media through the standard HTML5 `<video>`/`<audio>` element
 against a direct, self-hosted or licensed URL. It does not attempt to
 control or bypass DRM on third-party apps (Spotify, YouTube, Netflix, etc.)
 — see `docs/ARCHITECTURE.md#officially-supported-playback-only` for the

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RoomMember } from '@syncplay/shared';
+import { RoomMember } from '@orbit/shared';
 import { RedisService } from '../redis/redis.service';
 import { DevicesService } from '../devices/devices.service';
 import { RoomsService } from './rooms.service';
