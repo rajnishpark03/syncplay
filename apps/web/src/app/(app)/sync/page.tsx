@@ -58,7 +58,7 @@ function SyncSession() {
   } = useSync();
   // The player itself lives in PlayerProvider so music keeps playing when you
   // navigate to Games/Home — this screen only drives its controls.
-  const { playerRef, localPositionMs, durationMs, seekingRef } = usePlayer();
+  const { playerRef, localPositionMs, durationMs, seekingRef, isFullscreen, toggleFullscreen } = usePlayer();
   const [showLoader, setShowLoader] = useState(false);
   const [form, setForm] = useState<LoaderForm>(EMPTY_FORM);
   const otherDeviceIds = members.filter((m) => m.deviceId !== deviceId).map((m) => m.deviceId);
@@ -157,6 +157,14 @@ function SyncSession() {
               </button>
               <button className="btn-icon" onClick={() => seek(localPositionMs + 10000)} aria-label="Forward 10s">
                 <FwdIcon />
+              </button>
+              <button
+                className="btn-icon"
+                onClick={toggleFullscreen}
+                aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+              >
+                <FullscreenIcon exit={isFullscreen} />
               </button>
               <button
                 className="btn-icon disabled:opacity-30"
@@ -499,6 +507,17 @@ function FwdIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={1.8}>
       <path d="M13 19l8-7-8-7M3 19l8-7-8-7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function FullscreenIcon({ exit }: { exit?: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={1.9}>
+      {exit ? (
+        <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" strokeLinecap="round" strokeLinejoin="round" />
+      )}
     </svg>
   );
 }

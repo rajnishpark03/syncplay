@@ -16,6 +16,8 @@ export interface MediaPlayerHandle {
   setRate(rate: number): void;
   isMuted(): boolean;
   toggleMute(): void;
+  /** iOS Safari can only fullscreen the <video> element itself. */
+  enterNativeFullscreen?(): void;
 }
 
 interface Props {
@@ -194,6 +196,10 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
       },
       isMuted: () => muted,
       toggleMute: () => setMuted((m) => !m),
+      enterNativeFullscreen: () => {
+        const el = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+        el?.webkitEnterFullscreen?.();
+      },
     }),
     [isYoutube, ytReady, muted],
   );
