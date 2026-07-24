@@ -6,6 +6,7 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { RoomGate } from '@/components/room/room-gate';
 import { MediaPlayer, MediaPlayerHandle } from '@/components/sync/media-player';
 import { ScreenSharePanel } from '@/components/sync/screen-share-panel';
+import { CameraPanel } from '@/components/sync/camera-panel';
 import { useSyncEngine } from '@/hooks/use-sync-engine';
 import { extractYouTubeId, fetchYouTubeOEmbed } from '@/lib/youtube';
 import type { MediaProvider, MediaType, TrackInfo } from '@syncplay/shared';
@@ -75,6 +76,7 @@ function SyncSession() {
   const lastCorrectionAtRef = useRef(0);
   const provider = mediaState.track?.provider ?? 'direct';
   const otherDeviceIds = members.filter((m) => m.deviceId !== deviceId).map((m) => m.deviceId);
+  const memberNames = Object.fromEntries(members.map((m) => [m.deviceId, m.deviceName]));
 
   // Reflect server-driven play/pause + resync when the track changes.
   useEffect(() => {
@@ -180,7 +182,7 @@ function SyncSession() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
       <header className="flex items-center justify-between">
         <div>
           <p className="text-sm text-white/40">Room {roomCode}</p>
@@ -189,6 +191,14 @@ function SyncSession() {
         <SyncHealthBadge connected={connected} latencyMs={syncHealth.latencyMs} quality={syncHealth.quality} />
       </header>
 
+      {/* Camera on the left, player in the middle, queue on the right (desktop).
+          On smaller screens these stack: player first, then queue, then camera. */}
+      <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px] xl:items-start">
+        <aside className="order-3 xl:order-1">
+          <CameraPanel memberNames={memberNames} />
+        </aside>
+
+        <div className="order-1 space-y-6 xl:order-2">
       <GlassCard hoverable={false} className="overflow-hidden p-0">
         <MediaPlayer
           ref={playerRef}
@@ -262,52 +272,65 @@ function SyncSession() {
         )}
       </GlassCard>
 
-      {mediaState.track && (
-        <div className="flex gap-4">
-          <button className="text-sm text-white/40 hover:text-white/70" onClick={() => setShowLoader(true)}>
-            + Add / change media
-          </button>
+          {mediaState.track && (
+            <div className="flex gap-4">
+              <button className="text-sm text-white/40 hover:text-white/70" onClick={() => setShowLoader(true)}>
+                + Add / change media
+              </button>
+            </div>
+          )}
+
+          <ScreenSharePanel otherDeviceIds={otherDeviceIds} />
         </div>
-      )}
 
-      {mediaState.queue.length > 0 && (
-        <GlassCard hoverable={false}>
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-white/70">Up Next ({mediaState.queue.length})</h3>
-            <button className="text-xs text-accent-soft hover:text-accent" onClick={skip}>
-              Skip current →
-            </button>
-          </div>
-          <div className="space-y-2">
-            {mediaState.queue.map((t, i) => (
-              <div key={t.id} className="flex items-center gap-3 rounded-xl bg-white/[0.03] p-2">
-                <span className="w-5 text-center text-xs text-white/30">{i + 1}</span>
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
-                  {t.artworkUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={t.artworkUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span>{t.mediaType === 'music' ? '🎵' : '🎬'}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm">{t.title}</p>
-                  <p className="truncate text-xs text-white/40">{t.subtitle ?? (t.provider === 'youtube' ? 'YouTube' : 'Direct')}</p>
-                </div>
-                <button
-                  className="px-2 text-white/30 hover:text-red-400"
-                  onClick={() => removeFromQueue(t.id)}
-                  aria-label="Remove from queue"
-                >
-                  ✕
+        <aside className="order-2 xl:order-3">
+          <GlassCard hoverable={false}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-white/70">Up Next ({mediaState.queue.length})</h3>
+              {mediaState.queue.length > 0 && (
+                <button className="text-xs text-accent-soft hover:text-accent" onClick={skip}>
+                  Skip →
                 </button>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-      )}
+              )}
+            </div>
 
-      <ScreenSharePanel otherDeviceIds={otherDeviceIds} />
+            {mediaState.queue.length === 0 ? (
+              <p className="text-xs text-white/30">
+                Queue is empty. Use <span className="text-white/50">+ Add / change media</span> → “Add to queue” to line up songs.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {mediaState.queue.map((t, i) => (
+                  <div key={t.id} className="flex items-center gap-3 rounded-xl bg-white/[0.03] p-2">
+                    <span className="w-5 text-center text-xs text-white/30">{i + 1}</span>
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
+                      {t.artworkUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={t.artworkUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span>{t.mediaType === 'music' ? '🎵' : '🎬'}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm">{t.title}</p>
+                      <p className="truncate text-xs text-white/40">
+                        {t.subtitle ?? (t.provider === 'youtube' ? 'YouTube' : 'Direct')}
+                      </p>
+                    </div>
+                    <button
+                      className="px-2 text-white/30 hover:text-red-400"
+                      onClick={() => removeFromQueue(t.id)}
+                      aria-label="Remove from queue"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </GlassCard>
+        </aside>
+      </div>
 
       {showLoader && (
         <MediaLoaderModal

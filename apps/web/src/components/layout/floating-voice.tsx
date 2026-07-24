@@ -12,7 +12,7 @@ import { useVoice } from '@/providers/voice-provider';
  */
 export function FloatingVoice() {
   const pathname = usePathname();
-  const { status, muted, remoteLevel, join, leave, toggleMute } = useVoice();
+  const { status, muted, cameraOn, remoteLevel, join, leave, toggleMute, toggleCamera } = useVoice();
 
   if (pathname?.startsWith('/voice')) return null;
 
@@ -47,6 +47,15 @@ export function FloatingVoice() {
               </span>
             </button>
             <button
+              onClick={toggleCamera}
+              className={`flex h-11 w-11 items-center justify-center rounded-full transition ${
+                cameraOn ? 'bg-accent' : 'bg-white/10 hover:bg-white/20'
+              }`}
+              aria-label={cameraOn ? 'Turn camera off' : 'Turn camera on'}
+            >
+              <CameraIcon off={!cameraOn} />
+            </button>
+            <button
               onClick={leave}
               className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500/90 transition hover:bg-red-500"
               aria-label="End voice"
@@ -79,6 +88,16 @@ function MicIcon({ muted }: { muted: boolean }) {
       <rect x="9" y="3" width="6" height="11" rx="3" fill={muted ? 'none' : 'white'} stroke="white" />
       <path d="M5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
       {muted && <path d="M4 4l16 16" strokeLinecap="round" />}
+    </svg>
+  );
+}
+
+function CameraIcon({ off }: { off?: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={1.8}>
+      <rect x="3" y="6" width="12" height="12" rx="2" />
+      <path d="M15 10.5 21 7v10l-6-3.5" strokeLinejoin="round" />
+      {off && <path d="M4 4l16 16" strokeLinecap="round" />}
     </svg>
   );
 }

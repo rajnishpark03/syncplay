@@ -7,7 +7,7 @@ export default function SettingsPage() {
   const settings = useSettingsStore();
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-3xl space-y-6">
       <header>
         <p className="text-sm text-white/40">Preferences</p>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>

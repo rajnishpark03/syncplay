@@ -39,7 +39,7 @@ export default function HomePage() {
   const firstName = profile?.name?.split(' ')[0] ?? profile?.email.split('@')[0];
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-3xl space-y-6">
       <header>
         <p className="text-sm text-white/40">Welcome back</p>
         <h1 className="text-2xl font-semibold tracking-tight">{firstName}</h1>

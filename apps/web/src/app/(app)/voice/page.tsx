@@ -14,7 +14,8 @@ export default function VoicePage() {
 }
 
 function VoiceSession() {
-  const { status, muted, speakerOn, remoteLevel, peerDeviceIds, join, leave, toggleMute, toggleSpeaker } = useVoice();
+  const { status, muted, speakerOn, cameraOn, remoteLevel, peerDeviceIds, join, leave, toggleMute, toggleSpeaker, toggleCamera } =
+    useVoice();
   const { members } = useSyncEngine();
 
   const peer = members.find((m) => peerDeviceIds.includes(m.deviceId));
@@ -61,6 +62,7 @@ function VoiceSession() {
       {inCall && (
         <div className="flex items-center gap-4">
           <ControlButton active={muted} onClick={toggleMute} label={muted ? 'Unmute' : 'Mute'} icon={<MicIcon muted={muted} small />} />
+          <ControlButton active={cameraOn} onClick={toggleCamera} label={cameraOn ? 'Camera on' : 'Camera'} icon={<CameraIcon off={!cameraOn} />} />
           <ControlButton active={!speakerOn} onClick={toggleSpeaker} label="Speaker" icon={<SpeakerIcon off={!speakerOn} />} />
           <ControlButton active danger onClick={leave} label="End" icon={<EndIcon />} />
         </div>
@@ -118,6 +120,15 @@ function MicIcon({ muted, small }: { muted?: boolean; small?: boolean }) {
       <rect x="9" y="3" width="6" height="11" rx="3" fill={muted ? 'none' : 'white'} stroke="white" />
       <path d="M5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
       {muted && <path d="M4 4l16 16" strokeLinecap="round" />}
+    </svg>
+  );
+}
+function CameraIcon({ off }: { off?: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={1.8}>
+      <rect x="3" y="6" width="12" height="12" rx="2" />
+      <path d="M15 10.5 21 7v10l-6-3.5" strokeLinejoin="round" />
+      {off && <path d="M4 4l16 16" strokeLinecap="round" />}
     </svg>
   );
 }
