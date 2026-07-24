@@ -43,6 +43,9 @@ export function useVoiceChat() {
   const remoteAudioElsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const analyserRef = useRef<{ ctx: AudioContext; frame: number } | null>(null);
   const ringtoneRef = useRef<ReturnType<typeof createRingtone> | null>(null);
+  /** Always points at the latest leave(), so the once-registered socket
+   *  handlers can hang up without re-subscribing on every render. */
+  const leaveRef = useRef<() => void>(() => undefined);
   const statusRef = useRef(status);
   statusRef.current = status;
 
@@ -170,9 +173,16 @@ export function useVoiceChat() {
       });
       setPeerDeviceIds((prev) => prev.filter((id) => id !== peerId));
       setIncomingCall((cur) => (cur?.deviceId === peerId ? null : cur));
-      if (peersRef.current.size === 0) stopLevelMeter();
       ringtoneRef.current?.stop();
       ringtoneRef.current = null;
+
+      // Last peer gone → the call is over for us too. Hanging up on one side
+      // should end it on both, like a normal phone call (with 3+ people it
+      // only ends once everyone else has left).
+      if (peersRef.current.size === 0) {
+        stopLevelMeter();
+        if (statusRef.current !== 'idle') leaveRef.current();
+      }
     };
 
     // Peers already in the voice room when we joined — we initiate to them.
@@ -312,6 +322,11 @@ export function useVoiceChat() {
       return next;
     });
   }, []);
+
+  // Keep the hang-up ref current for the socket handlers above.
+  useEffect(() => {
+    leaveRef.current = leave;
+  }, [leave]);
 
   useEffect(() => () => leave(), [leave]);
 
