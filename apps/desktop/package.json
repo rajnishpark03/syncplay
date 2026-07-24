@@ -4,7 +4,7 @@
   "private": true,
   "description": "SyncPlay desktop shell (Tauri) — wraps the static export of apps/web.",
   "scripts": {
-    "build:web-export": "npm run build --workspace=apps/web -- --config next.config.capacitor.js",
+    "build:web-export": "BUILD_EXPORT=true npm run build --workspace=apps/web",
     "dev": "tauri dev",
     "build": "npm run build:web-export && tauri build"
   },

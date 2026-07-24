@@ -4,11 +4,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
  * Wraps the Next.js web build for iOS/Android via Capacitor.
  *
  * Capacitor serves a static export, so the mobile build uses
- * `next.config.capacitor.js` (output: 'export') rather than the default
+ * a static export (BUILD_EXPORT=true) rather than the default
  * server-rendered config used for the Vercel deployment. See
  * docs/DEPLOYMENT.md § Mobile (Capacitor) for the full build steps:
  *
- *   npm run build -- --config next.config.capacitor.js   (produces ./out)
+ *   BUILD_EXPORT=true npm run build   (produces ./out)
  *   npx cap sync
  *   npx cap open ios | android
  */

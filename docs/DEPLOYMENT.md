@@ -81,7 +81,7 @@ server-rendered build:
 
 ```bash
 cd apps/web
-npm run build -- --config next.config.capacitor.js   # outputs ./out
+BUILD_EXPORT=true npm run build   # outputs ./out
 npx cap sync
 npx cap open ios       # requires Xcode
 npx cap open android   # requires Android Studio
