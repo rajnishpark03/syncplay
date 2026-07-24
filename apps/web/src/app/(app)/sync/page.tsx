@@ -54,6 +54,7 @@ function SyncSession() {
     changeSpeed,
     addToQueue,
     removeFromQueue,
+    playFromQueue,
     skip,
   } = useSync();
   // The player itself lives in PlayerProvider so music keeps playing when you
@@ -208,7 +209,7 @@ function SyncSession() {
         <aside className="order-2 min-w-0 xl:order-3">
           <GlassCard hoverable={false}>
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white/70">Up Next ({mediaState.queue.length})</h3>
+              <h3 className="text-sm font-semibold text-white/70">Playlist ({mediaState.queue.length})</h3>
               <div className="flex items-center gap-3">
                 {mediaState.queue.length > 0 && (
                   <button className="text-xs text-accent-soft hover:text-accent" onClick={skip}>
@@ -226,37 +227,55 @@ function SyncSession() {
 
             {mediaState.queue.length === 0 ? (
               <p className="text-xs text-white/30">
-                Queue is empty. Tap <span className="text-white/50">+ Add</span> to line up songs — they play automatically
-                one after another.
+                Nothing here yet. Tap <span className="text-white/50">+ Add</span> to line up songs — they play one after
+                another and stay in this list.
               </p>
             ) : (
               <div className="space-y-2">
-                {mediaState.queue.map((t, i) => (
-                  <div key={t.id} className="flex items-center gap-3 rounded-xl bg-white/[0.03] p-2">
-                    <span className="w-5 text-center text-xs text-white/30">{i + 1}</span>
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
-                      {t.artworkUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={t.artworkUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <span>{t.mediaType === 'music' ? '🎵' : '🎬'}</span>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm">{t.title}</p>
-                      <p className="truncate text-xs text-white/40">
-                        {t.subtitle ?? (t.provider === 'youtube' ? 'YouTube' : 'Direct')}
-                      </p>
-                    </div>
-                    <button
-                      className="px-2 text-white/30 hover:text-red-400"
-                      onClick={() => removeFromQueue(t.id)}
-                      aria-label="Remove from queue"
+                {mediaState.queue.map((t, i) => {
+                  const isCurrent = mediaState.track?.id === t.id;
+                  return (
+                    <div
+                      key={t.id}
+                      className={`flex min-w-0 items-center gap-2 rounded-xl p-2 transition ${
+                        isCurrent ? 'bg-accent/15 ring-1 ring-accent/40' : 'bg-white/[0.03]'
+                      }`}
                     >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        onClick={() => playFromQueue(t.id)}
+                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        aria-label={`Play ${t.title}`}
+                      >
+                        <span className="w-4 flex-shrink-0 text-center text-xs text-white/30">
+                          {isCurrent ? '▶' : i + 1}
+                        </span>
+                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
+                          {t.artworkUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={t.artworkUrl} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <span>{t.mediaType === 'music' ? '🎵' : '🎬'}</span>
+                          )}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className={`block truncate text-sm ${isCurrent ? 'text-white' : 'text-white/80'}`}>
+                            {t.title}
+                          </span>
+                          <span className="block truncate text-xs text-white/40">
+                            {t.subtitle ?? (t.provider === 'youtube' ? 'YouTube' : 'Direct')}
+                          </span>
+                        </span>
+                      </button>
+                      <button
+                        className="flex-shrink-0 px-1.5 text-white/30 transition hover:text-red-400"
+                        onClick={() => removeFromQueue(t.id)}
+                        aria-label={`Remove ${t.title}`}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </GlassCard>

@@ -20,6 +20,7 @@ import {
   QueueAddPayload,
   QueueRemovePayload,
   QueueSkipPayload,
+  QueuePlayPayload,
   RoomJoinPayload,
   ScreenSignalPayload,
   ScreenStartPayload,
@@ -240,6 +241,14 @@ export class RealtimeGateway {
     if (!this.requireRoom(client)) return;
     const state = await this.syncService.removeFromQueue(client.data.roomCode!, payload.trackId);
     this.broadcastState(client.data.roomCode!, state);
+  }
+
+  @SubscribeMessage(ClientEvents.QUEUE_PLAY)
+  async onQueuePlay(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() payload: QueuePlayPayload) {
+    if (!this.requireRoom(client)) return;
+    const state = await this.syncService.playFromQueue(client.data.roomCode!, client.data.deviceId, payload.trackId);
+    this.broadcastState(client.data.roomCode!, state);
+    if (state.track) this.logActivity(client, 'media_track_changed', `Now playing "${state.track.title}"`);
   }
 
   @SubscribeMessage(ClientEvents.QUEUE_SKIP)

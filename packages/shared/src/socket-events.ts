@@ -24,6 +24,7 @@ export const ClientEvents = {
   QUEUE_ADD: 'queue:add',
   QUEUE_REMOVE: 'queue:remove',
   QUEUE_SKIP: 'queue:skip',
+  QUEUE_PLAY: 'queue:play',
   SYNC_PING: 'sync:ping',
   SYNC_REQUEST_STATE: 'sync:requestState',
   VOICE_JOIN: 'voice:join',
@@ -145,6 +146,11 @@ export interface QueueRemovePayload {
 
 export interface QueueSkipPayload {
   deviceId: string;
+}
+
+export interface QueuePlayPayload {
+  deviceId: string;
+  trackId: string;
 }
 
 export interface ScreenStartPayload {

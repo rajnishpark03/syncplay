@@ -100,6 +100,9 @@ export class SyncService {
     return this.mutate(roomCode, (current) => ({
       ...current,
       track,
+      // Anything played is appended to the playlist, so the list doubles as a
+      // history of everything the room has watched.
+      queue: current.queue.some((t) => t.id === track.id) ? current.queue : [...current.queue, track],
       state: (autoplay ? 'playing' : 'paused') as PlaybackState,
       anchorPositionMs: positionMs,
       anchorServerTimeMs: Date.now(),
@@ -125,14 +128,33 @@ export class SyncService {
     }));
   }
 
-  /** Adds a track to the end of the up-next queue without interrupting current playback. */
-  async addToQueue(roomCode: string, track: TrackInfo): Promise<MediaSyncState> {
-    return this.mutate(roomCode, (current) => ({
-      ...current,
-      queue: [...current.queue, track],
-    }));
+  /**
+   * The queue is a persistent **playlist/history**, not a consume-once list:
+   * playing a track never removes it. The "current" position is derived from
+   * where the playing track sits in the list, so nothing extra to keep in sync.
+   */
+  private indexOfCurrent(state: MediaSyncState): number {
+    if (!state.track) return -1;
+    return state.queue.findIndex((t) => t.id === state.track!.id);
   }
 
+  /** Appends to the playlist. If nothing is playing yet, starts it immediately. */
+  async addToQueue(roomCode: string, track: TrackInfo): Promise<MediaSyncState> {
+    return this.mutate(roomCode, (current) => {
+      const queue = [...current.queue, track];
+      if (current.track) return { ...current, queue };
+      return {
+        ...current,
+        queue,
+        track,
+        state: 'playing' as PlaybackState,
+        anchorPositionMs: 0,
+        anchorServerTimeMs: Date.now(),
+      };
+    });
+  }
+
+  /** The only way an entry ever leaves the playlist — an explicit removal. */
   async removeFromQueue(roomCode: string, trackId: string): Promise<MediaSyncState> {
     return this.mutate(roomCode, (current) => ({
       ...current,
@@ -140,21 +162,37 @@ export class SyncService {
     }));
   }
 
+  /** Jump straight to a playlist entry (tapping an item in the list). */
+  async playFromQueue(roomCode: string, deviceId: string, trackId: string): Promise<MediaSyncState> {
+    return this.mutate(roomCode, (current) => {
+      const track = current.queue.find((t) => t.id === trackId);
+      if (!track) return current;
+      return {
+        ...current,
+        track,
+        state: 'playing' as PlaybackState,
+        anchorPositionMs: 0,
+        anchorServerTimeMs: Date.now(),
+        updatedByDeviceId: deviceId,
+      };
+    });
+  }
+
   /**
-   * Advances to the next queued track (used for both an explicit "skip" and
-   * an automatic advance when the current track ends). If the queue is
-   * empty, playback just stops on the current track instead of looping.
+   * Moves to the next playlist entry (explicit skip, or the current track
+   * ending). Entries are left in place — only the pointer moves. At the end
+   * of the list playback simply stops.
    */
   async advance(roomCode: string, deviceId: string): Promise<MediaSyncState> {
     return this.mutate(roomCode, (current) => {
-      const [next, ...rest] = current.queue;
+      const index = this.indexOfCurrent(current);
+      const next = current.queue[index + 1];
       if (!next) {
         return { ...current, state: 'paused' as PlaybackState, updatedByDeviceId: deviceId };
       }
       return {
         ...current,
         track: next,
-        queue: rest,
         state: 'playing' as PlaybackState,
         anchorPositionMs: 0,
         anchorServerTimeMs: Date.now(),

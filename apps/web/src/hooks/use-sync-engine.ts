@@ -197,6 +197,10 @@ export function useSyncEngine() {
     getSocket().emit(ClientEvents.QUEUE_REMOVE, { deviceId: deviceId.current, trackId });
   }, []);
 
+  const playFromQueue = useCallback((trackId: string) => {
+    getSocket().emit(ClientEvents.QUEUE_PLAY, { deviceId: deviceId.current, trackId });
+  }, []);
+
   const skip = useCallback(() => {
     getSocket().emit(ClientEvents.QUEUE_SKIP, { deviceId: deviceId.current });
   }, []);
@@ -234,6 +238,7 @@ export function useSyncEngine() {
     requestState,
     addToQueue,
     removeFromQueue,
+    playFromQueue,
     skip,
     reportEnded,
     heartbeat,
