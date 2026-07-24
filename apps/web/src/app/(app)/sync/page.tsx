@@ -102,7 +102,7 @@ function SyncSession() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-white/40">Room {roomCode}</p>
           <h1 className="text-2xl font-semibold tracking-tight">Now Playing</h1>

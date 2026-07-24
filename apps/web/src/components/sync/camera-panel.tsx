@@ -66,7 +66,7 @@ export function CameraPanel({ memberNames }: { memberNames: Record<string, strin
 
   return (
     <GlassCard hoverable={false} className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-white/70">Camera</h3>
         <button
           onClick={handleToggleCamera}

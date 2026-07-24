@@ -94,7 +94,7 @@ function GamesSection() {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-white/40">Room {session.roomCode}</p>
           <h1 className="text-2xl font-semibold tracking-tight capitalize">{session.gameId}</h1>
@@ -129,8 +129,8 @@ function GamesSection() {
         <h3 className="mb-2 text-sm font-semibold text-white/70">Players</h3>
         <div className="space-y-1.5">
           {session.players.map((p) => (
-            <div key={p.deviceId} className="flex items-center justify-between text-sm">
-              <span className={p.seat === session.turnSeat ? 'text-white' : 'text-white/50'}>
+            <div key={p.deviceId} className="flex min-w-0 items-center justify-between gap-2 text-sm">
+              <span className={`truncate ${p.seat === session.turnSeat ? 'text-white' : 'text-white/50'}`}>
                 {p.name} {p.deviceId === deviceId && <span className="text-white/30">(you)</span>}
               </span>
               {p.seat === session.turnSeat && !session.finished && (
@@ -226,7 +226,7 @@ function LudoSection({
 
   return (
     <div className="space-y-3">
-      <GlassCard hoverable={false} className="flex items-center justify-between py-3">
+      <GlassCard hoverable={false} className="flex flex-wrap items-center justify-between gap-3 py-3">
         <div>
           <p className="text-sm">
             {finished

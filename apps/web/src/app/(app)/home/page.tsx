@@ -48,10 +48,10 @@ export default function HomePage() {
       </header>
 
       {currentRoom ? (
-        <GlassCard hoverable={false} className="flex items-center justify-between">
+        <GlassCard hoverable={false} className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs text-white/40">Active session {currentRoom.name ? `· ${currentRoom.name}` : ''}</p>
-            <p className="text-2xl font-bold tracking-[0.25em] text-accent-soft">{currentRoom.code}</p>
+            <p className="text-xl font-bold tracking-[0.2em] text-accent-soft sm:text-2xl sm:tracking-[0.25em]">{currentRoom.code}</p>
             <p className="mt-1 text-xs text-white/40">
               {members.length} device{members.length === 1 ? '' : 's'} connected
             </p>
@@ -68,9 +68,9 @@ export default function HomePage() {
         </GlassCard>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
         <Link href="/sync">
-          <GlassCard className="h-40 justify-between overflow-hidden">
+          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
             <div className="flex flex-col justify-between h-full">
               <span className="text-2xl">🎧</span>
               <div>
@@ -81,7 +81,7 @@ export default function HomePage() {
           </GlassCard>
         </Link>
         <Link href="/sync">
-          <GlassCard className="h-40 justify-between overflow-hidden">
+          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
             <div className="flex flex-col justify-between h-full">
               <span className="text-2xl">🎬</span>
               <div>
@@ -92,7 +92,7 @@ export default function HomePage() {
           </GlassCard>
         </Link>
         <Link href="/voice">
-          <GlassCard className="h-40 justify-between overflow-hidden">
+          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
             <div className="flex flex-col justify-between h-full">
               <span className="text-2xl">🎙️</span>
               <div>
@@ -103,7 +103,7 @@ export default function HomePage() {
           </GlassCard>
         </Link>
         <Link href="/profile">
-          <GlassCard className="h-40 justify-between overflow-hidden">
+          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
             <div className="flex h-full flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-2xl">📱</span>

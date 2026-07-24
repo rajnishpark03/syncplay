@@ -39,7 +39,7 @@ export function ScreenSharePanel({ otherDeviceIds }: { otherDeviceIds: string[] 
 
   return (
     <GlassCard hoverable={false}>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-white/70">Screen Share</h3>
           <p className="text-xs text-white/40">
