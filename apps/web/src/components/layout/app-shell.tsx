@@ -3,11 +3,13 @@
 import { BottomNav } from './bottom-nav';
 import { FloatingVoice } from './floating-voice';
 import { PersistentPlayer } from './persistent-player';
+import { RoomBackdrop } from '@/components/ui/room-backdrop';
 import { IncomingCall } from './incoming-call';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-app-gradient md:flex-row">
+    <div className="relative flex min-h-screen flex-col bg-app-gradient md:flex-row">
+      <RoomBackdrop />
       <BottomNav />
       {/* Width is left to each page: most constrain to max-w-3xl, the Sync
           screen goes wider so the camera / player / queue columns fit. */}
