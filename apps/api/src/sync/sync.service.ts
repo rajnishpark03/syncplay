@@ -22,9 +22,9 @@ const IDLE_STATE: Omit<MediaSyncState, 'roomCode'> = {
  * instances) so the play/pause/seek path never waits on Postgres. Every
  * mutation is mirrored to Postgres afterwards (fire-and-forget) purely for
  * durability across restarts and the Sync screen's "resume where you left
- * off" behaviour — it is never on the hot broadcast path. The queue itself
- * is Redis-only (not persisted) — losing an upcoming-tracks list on a
- * restart is an acceptable tradeoff for not persisting it on every add/remove.
+ * off" behaviour — it is never on the hot broadcast path. The queue is
+ * persisted too, so a user-curated up-next list survives restarts and is only
+ * ever removed when someone explicitly removes it.
  *
  * The state a client receives is a *server-anchored* position
  * (anchorPositionMs @ anchorServerTimeMs + playbackRate), not a raw
@@ -190,7 +190,9 @@ export class SyncService {
   }
 
   private async writeCache(roomCode: string, state: MediaSyncState) {
-    await this.redis.client.set(this.key(roomCode), JSON.stringify(state), 'EX', 60 * 60 * 24);
+    // No TTL: the queue is user-curated content and must survive until they
+    // explicitly remove it (Postgres holds the durable copy either way).
+    await this.redis.client.set(this.key(roomCode), JSON.stringify(state));
   }
 
   private async persist(roomCode: string, state: MediaSyncState) {
@@ -205,6 +207,7 @@ export class SyncService {
         artworkUrl: state.track?.artworkUrl,
         sourceUrl: state.track?.sourceUrl,
         durationMs: state.track?.durationMs ?? 0,
+        queue: state.queue as unknown as object,
         state: state.state,
         anchorPositionMs: state.anchorPositionMs,
         anchorServerTime: new Date(state.anchorServerTimeMs),
@@ -220,6 +223,7 @@ export class SyncService {
         artworkUrl: state.track?.artworkUrl,
         sourceUrl: state.track?.sourceUrl,
         durationMs: state.track?.durationMs ?? 0,
+        queue: state.queue as unknown as object,
         state: state.state,
         anchorPositionMs: state.anchorPositionMs,
         anchorServerTime: new Date(state.anchorServerTimeMs),
@@ -240,6 +244,7 @@ export class SyncService {
       artworkUrl: string | null;
       sourceUrl: string | null;
       durationMs: number;
+      queue: unknown;
       state: string;
       anchorPositionMs: number;
       anchorServerTime: Date;
@@ -262,7 +267,7 @@ export class SyncService {
             durationMs: row.durationMs,
           }
         : null,
-      queue: [],
+      queue: Array.isArray(row.queue) ? (row.queue as unknown as TrackInfo[]) : [],
       state: row.state as PlaybackState,
       anchorPositionMs: row.anchorPositionMs,
       anchorServerTimeMs: row.anchorServerTime.getTime(),

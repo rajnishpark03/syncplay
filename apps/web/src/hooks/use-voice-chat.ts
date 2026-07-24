@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ClientEvents, ServerEvents, VoicePeerJoinedPayload, VoiceSignalRelayPayload } from '@orbit/shared';
 import { getSocket } from '@/lib/socket';
 import { getOrCreateDeviceId } from '@/lib/device';
+import { createRingtone } from '@/lib/ringtone';
 
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
@@ -33,12 +34,23 @@ export function useVoiceChat() {
   const [peerDeviceIds, setPeerDeviceIds] = useState<string[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
+  /** Someone in the room started voice while we're idle → ring them through. */
+  const [incomingCall, setIncomingCall] = useState<{ deviceId: string; deviceName: string } | null>(null);
 
   const deviceId = useRef(getOrCreateDeviceId());
   const localStreamRef = useRef<MediaStream | null>(null);
   const peersRef = useRef<Map<string, PeerState>>(new Map());
   const remoteAudioElsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const analyserRef = useRef<{ ctx: AudioContext; frame: number } | null>(null);
+  const ringtoneRef = useRef<ReturnType<typeof createRingtone> | null>(null);
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
+  const stopRinging = useCallback(() => {
+    ringtoneRef.current?.stop();
+    ringtoneRef.current = null;
+    setIncomingCall(null);
+  }, []);
 
   const emitSignal = (targetDeviceId: string, signal: Signal) => {
     getSocket().emit(ClientEvents.VOICE_SIGNAL, { deviceId: deviceId.current, targetDeviceId, signal });
@@ -136,6 +148,14 @@ export function useVoiceChat() {
 
     const onPeerJoined = (payload: VoicePeerJoinedPayload) => {
       setPeerDeviceIds((prev) => Array.from(new Set([...prev, payload.deviceId])));
+      // Not in the call yet → this is an incoming call, so ring.
+      if (statusRef.current === 'idle') {
+        setIncomingCall({ deviceId: payload.deviceId, deviceName: payload.deviceName });
+        if (!ringtoneRef.current) {
+          ringtoneRef.current = createRingtone();
+          ringtoneRef.current.start();
+        }
+      }
     };
 
     const onPeerLeft = ({ deviceId: peerId }: { deviceId: string }) => {
@@ -149,7 +169,10 @@ export function useVoiceChat() {
         return next;
       });
       setPeerDeviceIds((prev) => prev.filter((id) => id !== peerId));
+      setIncomingCall((cur) => (cur?.deviceId === peerId ? null : cur));
       if (peersRef.current.size === 0) stopLevelMeter();
+      ringtoneRef.current?.stop();
+      ringtoneRef.current = null;
     };
 
     // Peers already in the voice room when we joined — we initiate to them.
@@ -200,6 +223,7 @@ export function useVoiceChat() {
   }, [getOrCreatePeer]);
 
   const join = useCallback(async () => {
+    stopRinging();
     setStatus('connecting');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -213,7 +237,7 @@ export function useVoiceChat() {
       console.error('[voice] failed to acquire microphone', err);
       setStatus('error');
     }
-  }, []);
+  }, [stopRinging]);
 
   const leave = useCallback(() => {
     getSocket().emit(ClientEvents.VOICE_LEAVE, { deviceId: deviceId.current });
@@ -229,7 +253,8 @@ export function useVoiceChat() {
     setStatus('idle');
     setCameraOn(false);
     setPeerDeviceIds([]);
-  }, []);
+    stopRinging();
+  }, [stopRinging]);
 
   /** Adds/removes the camera track on the live call (renegotiates automatically). */
   const toggleCamera = useCallback(async () => {
@@ -292,6 +317,10 @@ export function useVoiceChat() {
 
   return {
     status,
+    incomingCall,
+    /** Pick up: silences the ringtone and joins the call. */
+    acceptCall: join,
+    declineCall: stopRinging,
     muted,
     speakerOn,
     cameraOn,

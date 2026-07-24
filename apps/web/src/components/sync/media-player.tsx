@@ -4,6 +4,9 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import type { TrackInfo } from '@orbit/shared';
 import { loadYouTubeIframeApi, YTPlayer } from '@/lib/youtube-iframe-api';
 
+/** Remembers "I want sound" so you only ever tap unmute once. */
+const SOUND_PREF_KEY = 'orbit:sound';
+
 export interface MediaPlayerHandle {
   getCurrentTimeMs(): number;
   isPaused(): boolean;
@@ -31,8 +34,9 @@ interface Props {
  * Every new track starts muted. Browsers block unmuted `play()`/`playVideo()`
  * calls that aren't a direct result of a user gesture — and a play triggered
  * by an incoming `media:play` socket event (the whole point of sync) never
- * is one. Starting muted keeps autoplay reliable; an on-screen "Unmute"
- * button lets the user opt in with a real click.
+ * is one. So the FIRST ever track starts muted with a one-tap unmute; after
+ * the user unmutes once we remember it (localStorage) and every later track
+ * starts with sound, because the page then has sticky user activation.
  */
 export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPlayer(
   { track, isVideo, onDurationChange, onEnded },
@@ -45,12 +49,26 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
   const ytPlayerRef = useRef<YTPlayer | null>(null);
   const loadedVideoIdRef = useRef<string | null>(null);
   const [ytReady, setYtReady] = useState(false);
-  const [muted, setMuted] = useState(true);
+  // Remembered across tracks and sessions, so you unmute once — not every song.
+  const [muted, setMutedState] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.localStorage.getItem(SOUND_PREF_KEY) !== 'on';
+  });
+  const setMuted = (next: boolean | ((prev: boolean) => boolean)) => {
+    setMutedState((prev) => {
+      const value = typeof next === 'function' ? next(prev) : next;
+      try {
+        window.localStorage.setItem(SOUND_PREF_KEY, value ? 'off' : 'on');
+      } catch {
+        // private mode — preference just won't persist
+      }
+      return value;
+    });
+  };
+  // Read inside the YT init callback without making it a dependency.
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
   const isYoutube = track?.provider === 'youtube';
-
-  useEffect(() => {
-    setMuted(true);
-  }, [track?.id]);
 
   useEffect(() => {
     if (isYoutube) {
@@ -92,7 +110,7 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
           // controls: 0 hides YouTube's own play/pause bar and title/info
           // overlay entirely — Orbit's own controls below the video are
           // the only playback UI shown, matching direct-URL tracks.
-          playerVars: { playsinline: 1, controls: 0, disablekb: 1, iv_load_policy: 3, modestbranding: 1, rel: 0, mute: 1 },
+          playerVars: { playsinline: 1, controls: 0, disablekb: 1, iv_load_policy: 3, modestbranding: 1, rel: 0, mute: mutedRef.current ? 1 : 0 },
           events: {
             onReady: () => {
               if (cancelled) return;
@@ -186,8 +204,12 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
       )}
 
       {isYoutube ? (
-        <div className="aspect-video w-full overflow-hidden bg-black">
+        <div className="relative aspect-video w-full overflow-hidden bg-black">
           <div ref={ytContainerRef} className="h-full w-full" />
+          {/* Swallows all pointer events so YouTube's own hover UI (title bar,
+              share / watch-later buttons, its play overlay) never appears —
+              playback is driven entirely by Orbit's controls below. */}
+          <div className="absolute inset-0 cursor-default" aria-hidden />
         </div>
       ) : (
         <div

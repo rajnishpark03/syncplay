@@ -33,6 +33,10 @@ export const ClientEvents = {
   SCREEN_START: 'screen:start',
   SCREEN_STOP: 'screen:stop',
   SCREEN_SIGNAL: 'screen:signal',
+  GAME_START: 'game:start',
+  GAME_MOVE: 'game:move',
+  GAME_END: 'game:end',
+  GAME_REQUEST_STATE: 'game:requestState',
 } as const;
 
 export const ServerEvents = {
@@ -50,6 +54,7 @@ export const ServerEvents = {
   SCREEN_PEER_STARTED: 'screen:peer-started',
   SCREEN_PEER_STOPPED: 'screen:peer-stopped',
   SCREEN_SIGNAL: 'screen:signal',
+  GAME_STATE: 'game:state',
   ERROR: 'error',
 } as const;
 

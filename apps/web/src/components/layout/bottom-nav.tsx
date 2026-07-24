@@ -8,7 +8,7 @@ import { clsx } from 'clsx';
 const ITEMS = [
   { href: '/home', label: 'Home', icon: HomeIcon },
   { href: '/sync', label: 'Sync', icon: SyncIcon },
-  { href: '/voice', label: 'Voice', icon: VoiceIcon },
+  { href: '/games', label: 'Games', icon: GamesIcon },
   { href: '/profile', label: 'Profile', icon: ProfileIcon },
   { href: '/settings', label: 'Settings', icon: SettingsIcon },
 ] as const;
@@ -63,11 +63,11 @@ function SyncIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-function VoiceIcon(props: React.SVGProps<SVGSVGElement>) {
+function GamesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} {...props}>
-      <rect x="9" y="3" width="6" height="11" rx="3" />
-      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
+      <rect x="2.5" y="7" width="19" height="10" rx="4" />
+      <path d="M7 10.5v3M5.5 12h3M15.5 11.5h.01M18 13.5h.01" strokeLinecap="round" />
     </svg>
   );
 }

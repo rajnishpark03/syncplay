@@ -24,6 +24,8 @@ import {
   ScreenSignalPayload,
   ScreenStartPayload,
   ScreenStopPayload,
+  GameStartPayload,
+  GameMovePayload,
   ServerEvents,
   SOCKET_ROOM_PREFIX,
   SyncPingPayload,
@@ -39,6 +41,7 @@ import { DevicesService } from '../devices/devices.service';
 import { ActivityService } from '../activity/activity.service';
 import { RoomsService } from '../rooms/rooms.service';
 import { RoomPresenceService } from '../rooms/room-presence.service';
+import { GamesService } from '../games/games.service';
 
 @WebSocketGateway({ cors: { origin: resolveCorsOrigin(), credentials: true } })
 export class RealtimeGateway {
@@ -55,6 +58,7 @@ export class RealtimeGateway {
     private readonly activityService: ActivityService,
     private readonly roomsService: RoomsService,
     private readonly roomPresence: RoomPresenceService,
+    private readonly gamesService: GamesService,
   ) {}
 
   private channel(roomCode: string) {
@@ -357,6 +361,53 @@ export class RealtimeGateway {
       signal: payload.signal,
       targetDeviceId: payload.targetDeviceId,
     });
+  }
+
+  // ---- Games (room-scoped; server stores opaque state + enforces turn order) ----
+
+  @SubscribeMessage(ClientEvents.GAME_START)
+  async onGameStart(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() payload: GameStartPayload) {
+    if (!this.requireRoom(client)) return;
+    const roomCode = client.data.roomCode!;
+    const session = await this.gamesService.start(
+      roomCode,
+      payload.gameId,
+      payload.players,
+      payload.state,
+      payload.turnSeat,
+    );
+    this.server.to(this.channel(roomCode)).emit(ServerEvents.GAME_STATE, session);
+    this.logActivity(client, 'game_started', `${client.data.deviceName ?? 'Someone'} started a game of ${payload.gameId}`);
+  }
+
+  @SubscribeMessage(ClientEvents.GAME_MOVE)
+  async onGameMove(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() payload: GameMovePayload) {
+    if (!this.requireRoom(client)) return;
+    const roomCode = client.data.roomCode!;
+    const session = await this.gamesService.move(
+      roomCode,
+      client.data.deviceId,
+      payload.state,
+      payload.turnSeat,
+      payload.finished ?? false,
+    );
+    // null = not this player's turn (stale click / race) — ignore it silently.
+    if (!session) return;
+    this.server.to(this.channel(roomCode)).emit(ServerEvents.GAME_STATE, session);
+  }
+
+  @SubscribeMessage(ClientEvents.GAME_END)
+  async onGameEnd(@ConnectedSocket() client: AuthenticatedSocket) {
+    if (!client.data.roomCode) return;
+    await this.gamesService.end(client.data.roomCode);
+    this.server.to(this.channel(client.data.roomCode)).emit(ServerEvents.GAME_STATE, null);
+  }
+
+  @SubscribeMessage(ClientEvents.GAME_REQUEST_STATE)
+  async onGameRequestState(@ConnectedSocket() client: AuthenticatedSocket) {
+    if (!this.requireRoom(client)) return;
+    const session = await this.gamesService.get(client.data.roomCode!);
+    client.emit(ServerEvents.GAME_STATE, session);
   }
 
   private requireRoom(client: AuthenticatedSocket): boolean {

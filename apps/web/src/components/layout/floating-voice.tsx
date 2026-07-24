@@ -1,8 +1,52 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVoice } from '@/providers/voice-provider';
+
+/**
+ * A small floating face tile. Rendered only while the stream actually carries
+ * a live video track, so audio-only callers don't get an empty black box.
+ */
+function FloatingTile({ stream, label, mirrored }: { stream: MediaStream; label: string; mirrored?: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [hasVideo, setHasVideo] = useState(false);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.srcObject = stream;
+      ref.current.play().catch(() => undefined);
+    }
+    const sync = () => setHasVideo(stream.getVideoTracks().some((t) => t.readyState === 'live'));
+    sync();
+    stream.addEventListener('addtrack', sync);
+    stream.addEventListener('removetrack', sync);
+    // Tracks can also end without firing removetrack (camera turned off remotely).
+    const poll = setInterval(sync, 1000);
+    return () => {
+      stream.removeEventListener('addtrack', sync);
+      stream.removeEventListener('removetrack', sync);
+      clearInterval(poll);
+    };
+  }, [stream]);
+
+  return (
+    <div className={hasVideo ? 'relative overflow-hidden rounded-2xl shadow-card ring-1 ring-white/10' : 'hidden'}>
+      {/* muted: call audio already plays through the dedicated audio element */}
+      <video
+        ref={ref}
+        autoPlay
+        playsInline
+        muted
+        className={`h-32 w-24 bg-base-800 object-cover md:h-36 md:w-28 ${mirrored ? '-scale-x-100' : ''}`}
+      />
+      <span className="absolute bottom-1 left-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white/90">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 /**
  * A persistent, app-wide voice control. Because the voice session lives in
@@ -12,14 +56,28 @@ import { useVoice } from '@/providers/voice-provider';
  */
 export function FloatingVoice() {
   const pathname = usePathname();
-  const { status, muted, cameraOn, remoteLevel, join, leave, toggleMute, toggleCamera } = useVoice();
+  const { status, muted, cameraOn, remoteLevel, localStream, remoteStreams, join, leave, toggleMute, toggleCamera } =
+    useVoice();
 
   if (pathname?.startsWith('/voice')) return null;
 
   const inCall = status === 'connecting' || status === 'connected';
+  const remotes = Object.entries(remoteStreams);
 
   return (
-    <div className="fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6">
+    <div className="fixed bottom-24 right-4 z-40 flex flex-col items-end gap-2 md:bottom-6 md:right-6">
+      {/* Face tiles sit directly with the controls, so you see each other on
+          every screen — not just the Sync page. Stacked above the buttons so
+          they stay on-screen (the bar is already pinned near the bottom). */}
+      {inCall && (
+        <div className="flex flex-col items-end gap-2">
+          {remotes.map(([peerId, stream]) => (
+            <FloatingTile key={peerId} stream={stream} label="Partner" />
+          ))}
+          {localStream && <FloatingTile stream={localStream} label="You" mirrored />}
+        </div>
+      )}
+
       <AnimatePresence>
         {inCall ? (
           <motion.div

@@ -96,6 +96,7 @@ model MediaSession {
   artworkUrl        String?
   sourceUrl         String?
   durationMs        Int      @default(0)
+  queue             Json     @default("[]")
   state             String   @default("idle")
   anchorPositionMs  Int      @default(0)
   anchorServerTime  DateTime @default(now())

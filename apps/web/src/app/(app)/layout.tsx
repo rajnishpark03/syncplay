@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
 import { VoiceProvider } from '@/providers/voice-provider';
+import { PlayerProvider } from '@/providers/player-provider';
 import { AppShell } from '@/components/layout/app-shell';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -24,7 +25,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <VoiceProvider>
-      <AppShell>{children}</AppShell>
+      <PlayerProvider>
+        <AppShell>{children}</AppShell>
+      </PlayerProvider>
     </VoiceProvider>
   );
 }

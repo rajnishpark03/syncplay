@@ -4,22 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/glass-card';
 import { RoomGate } from '@/components/room/room-gate';
-import { MediaPlayer, MediaPlayerHandle } from '@/components/sync/media-player';
+import { PlayerSlot } from '@/components/sync/player-slot';
 import { ScreenSharePanel } from '@/components/sync/screen-share-panel';
 import { CameraPanel } from '@/components/sync/camera-panel';
 import { useSyncEngine } from '@/hooks/use-sync-engine';
+import { usePlayer } from '@/providers/player-provider';
 import { extractYouTubeId, fetchYouTubeOEmbed } from '@/lib/youtube';
 import type { MediaProvider, MediaType, TrackInfo } from '@orbit/shared';
-
-// Direct <video>/<audio> seeks are effectively instant (local/CDN buffered),
-// so we can hold them to the <100ms sync target. YouTube's IFrame player has
-// real seek latency (it has to re-buffer at the new position over the
-// network) — checking drift again before that settles causes a seek loop
-// that looks like continuous buffering. YouTube gets a looser threshold and
-// a cooldown after every correction so it has time to actually catch up.
-const DRIFT_THRESHOLD_MS = { direct: 150, youtube: 1200 } as const;
-const CORRECTION_COOLDOWN_MS = { direct: 0, youtube: 2500 } as const;
-const DRIFT_CHECK_INTERVAL_MS = 800;
 
 function formatTime(ms: number) {
   if (!Number.isFinite(ms) || ms < 0) ms = 0;
@@ -56,7 +47,6 @@ function SyncSession() {
     roomCode,
     members,
     deviceId,
-    expectedPositionMs,
     play,
     pause,
     seek,
@@ -65,78 +55,14 @@ function SyncSession() {
     addToQueue,
     removeFromQueue,
     skip,
-    reportEnded,
   } = useSyncEngine();
-  const playerRef = useRef<MediaPlayerHandle>(null);
-  const [localPositionMs, setLocalPositionMs] = useState(0);
-  const [mediaDurationMs, setMediaDurationMs] = useState(0);
+  // The player itself lives in PlayerProvider so music keeps playing when you
+  // navigate to Games/Home — this screen only drives its controls.
+  const { playerRef, localPositionMs, durationMs, seekingRef } = usePlayer();
   const [showLoader, setShowLoader] = useState(false);
   const [form, setForm] = useState<LoaderForm>(EMPTY_FORM);
-  const seekingRef = useRef(false);
-  const lastCorrectionAtRef = useRef(0);
-  const provider = mediaState.track?.provider ?? 'direct';
   const otherDeviceIds = members.filter((m) => m.deviceId !== deviceId).map((m) => m.deviceId);
   const memberNames = Object.fromEntries(members.map((m) => [m.deviceId, m.deviceName]));
-
-  // Reflect server-driven play/pause + resync when the track changes.
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player || !mediaState.track) return;
-
-    const target = expectedPositionMs();
-    if (Math.abs(player.getCurrentTimeMs() - target) > 1000) {
-      player.seekTo(target);
-      lastCorrectionAtRef.current = Date.now();
-    }
-    if (mediaState.state === 'playing' && player.isPaused()) {
-      player.play();
-    } else if (mediaState.state === 'paused' && !player.isPaused()) {
-      player.pause();
-    }
-    player.setRate(mediaState.playbackRate);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mediaState.track?.id, mediaState.state, mediaState.updatedAt]);
-
-  // Continuous drift correction + local position ticker — this is what keeps
-  // both devices within ~100ms of each other during steady playback.
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const player = playerRef.current;
-      if (!player || seekingRef.current) return;
-
-      const expected = expectedPositionMs();
-      const current = player.getCurrentTimeMs();
-      setLocalPositionMs(current || expected);
-
-      if (mediaState.state !== 'playing') return;
-
-      // Should be playing but isn't (blocked autoplay, user paused the
-      // native YouTube/video controls directly, buffering ended paused,
-      // etc). Resume it instead of endlessly re-seeking a frozen player —
-      // that's what used to look like a stuck buffering loop.
-      if (player.isPaused()) {
-        player.play();
-        return;
-      }
-
-      const cooldown = CORRECTION_COOLDOWN_MS[provider];
-      if (cooldown && Date.now() - lastCorrectionAtRef.current < cooldown) return;
-
-      const drift = current - expected;
-      if (Math.abs(drift) > DRIFT_THRESHOLD_MS[provider]) {
-        player.seekTo(expected);
-        lastCorrectionAtRef.current = Date.now();
-      }
-    }, DRIFT_CHECK_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [expectedPositionMs, mediaState.state, provider]);
-
-  const isVideo = mediaState.track?.mediaType !== 'music';
-  const durationMs = mediaDurationMs || mediaState.track?.durationMs || 0;
-
-  useEffect(() => {
-    setMediaDurationMs(0);
-  }, [mediaState.track?.id]);
 
   function handleTogglePlay() {
     const player = playerRef.current;
@@ -174,13 +100,6 @@ function SyncSession() {
     setForm(EMPTY_FORM);
   }
 
-  // When our player reaches the end, tell the server so it advances the room
-  // to the next queued track. The server de-dupes concurrent reports, so it's
-  // safe for every device to fire this.
-  function handleEnded() {
-    if (mediaState.track) reportEnded(mediaState.track.id);
-  }
-
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
       <header className="flex items-center justify-between">
@@ -200,13 +119,8 @@ function SyncSession() {
 
         <div className="order-1 space-y-6 xl:order-2">
       <GlassCard hoverable={false} className="overflow-hidden p-0">
-        <MediaPlayer
-          ref={playerRef}
-          track={mediaState.track}
-          isVideo={isVideo}
-          onDurationChange={setMediaDurationMs}
-          onEnded={handleEnded}
-        />
+        {/* The persistent player positions itself over this rectangle. */}
+        <PlayerSlot className={mediaState.track ? 'aspect-video w-full' : 'hidden'} />
 
         {!mediaState.track && (
           <div className="flex justify-center p-5">

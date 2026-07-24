@@ -93,7 +93,9 @@ export type ActivityType =
   | 'voice_started'
   | 'voice_ended'
   | 'screen_share_started'
-  | 'screen_share_stopped';
+  | 'screen_share_stopped'
+  | 'game_started'
+  | 'game_ended';
 
 export interface ActivityEntry {
   id: string;

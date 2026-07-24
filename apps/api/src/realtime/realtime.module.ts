@@ -6,9 +6,10 @@ import { AuthModule } from '../auth/auth.module';
 import { DevicesModule } from '../devices/devices.module';
 import { ActivityModule } from '../activity/activity.module';
 import { RoomsModule } from '../rooms/rooms.module';
+import { GamesModule } from '../games/games.module';
 
 @Module({
-  imports: [AuthModule, DevicesModule, ActivityModule, RoomsModule],
+  imports: [AuthModule, DevicesModule, ActivityModule, RoomsModule, GamesModule],
   providers: [RealtimeGateway, SyncService, VoiceService],
 })
 export class RealtimeModule {}

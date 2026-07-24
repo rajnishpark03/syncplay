@@ -22,6 +22,8 @@ const ACTIVITY_ICON: Record<ActivityType, string> = {
   voice_ended: '🔇',
   screen_share_started: '🖥️',
   screen_share_stopped: '🖥️',
+  game_started: '🎮',
+  game_ended: '🏁',
 };
 
 export default function HomePage() {
