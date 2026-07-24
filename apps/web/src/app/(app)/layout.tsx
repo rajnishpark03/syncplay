@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
+import { SyncProvider } from '@/providers/sync-provider';
 import { VoiceProvider } from '@/providers/voice-provider';
 import { PlayerProvider } from '@/providers/player-provider';
 import { AppShell } from '@/components/layout/app-shell';
@@ -24,10 +25,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <VoiceProvider>
-      <PlayerProvider>
-        <AppShell>{children}</AppShell>
-      </PlayerProvider>
-    </VoiceProvider>
+    <SyncProvider>
+      <VoiceProvider>
+        <PlayerProvider>
+          <AppShell>{children}</AppShell>
+        </PlayerProvider>
+      </VoiceProvider>
+    </SyncProvider>
   );
 }

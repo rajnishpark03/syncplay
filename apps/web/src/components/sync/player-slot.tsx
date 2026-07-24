@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { usePlayer } from '@/providers/player-provider';
 
 /**
@@ -13,7 +13,9 @@ export function PlayerSlot({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const { setSlot } = usePlayer();
 
-  useEffect(() => {
+  // Layout effect: measures before the browser paints, so the player is
+  // already in place on the first frame instead of visibly jumping there.
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
 

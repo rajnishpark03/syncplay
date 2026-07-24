@@ -7,7 +7,7 @@ import { RoomGate } from '@/components/room/room-gate';
 import { PlayerSlot } from '@/components/sync/player-slot';
 import { ScreenSharePanel } from '@/components/sync/screen-share-panel';
 import { CameraPanel } from '@/components/sync/camera-panel';
-import { useSyncEngine } from '@/hooks/use-sync-engine';
+import { useSync } from '@/providers/sync-provider';
 import { usePlayer } from '@/providers/player-provider';
 import { extractYouTubeId, fetchYouTubeOEmbed } from '@/lib/youtube';
 import type { MediaProvider, MediaType, TrackInfo } from '@orbit/shared';
@@ -55,7 +55,7 @@ function SyncSession() {
     addToQueue,
     removeFromQueue,
     skip,
-  } = useSyncEngine();
+  } = useSync();
   // The player itself lives in PlayerProvider so music keeps playing when you
   // navigate to Games/Home — this screen only drives its controls.
   const { playerRef, localPositionMs, durationMs, seekingRef } = usePlayer();

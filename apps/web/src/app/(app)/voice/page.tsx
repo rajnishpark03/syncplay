@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { RoomGate } from '@/components/room/room-gate';
-import { useSyncEngine } from '@/hooks/use-sync-engine';
+import { useSync } from '@/providers/sync-provider';
 import { useVoice } from '@/providers/voice-provider';
 
 export default function VoicePage() {
@@ -16,7 +16,7 @@ export default function VoicePage() {
 function VoiceSession() {
   const { status, muted, speakerOn, cameraOn, remoteLevel, peerDeviceIds, join, leave, toggleMute, toggleSpeaker, toggleCamera } =
     useVoice();
-  const { members } = useSyncEngine();
+  const { members } = useSync();
 
   const peer = members.find((m) => peerDeviceIds.includes(m.deviceId));
   const inCall = status === 'connecting' || status === 'connected';

@@ -2,7 +2,7 @@
 
 import { MediaPlayer } from '@/components/sync/media-player';
 import { usePlayer } from '@/providers/player-provider';
-import { useSyncEngine } from '@/hooks/use-sync-engine';
+import { useSync } from '@/providers/sync-provider';
 
 /**
  * The single, never-unmounted media surface.
@@ -14,7 +14,7 @@ import { useSyncEngine } from '@/hooks/use-sync-engine';
  */
 export function PersistentPlayer() {
   const { playerRef, slot, setMediaDurationMs } = usePlayer();
-  const { mediaState, reportEnded } = useSyncEngine();
+  const { mediaState, reportEnded } = useSync();
 
   const track = mediaState.track;
   const isVideo = track?.mediaType !== 'music';
@@ -42,6 +42,7 @@ export function PersistentPlayer() {
         ref={playerRef}
         track={track}
         isVideo={isVideo}
+        paused={mediaState.state !== 'playing'}
         onDurationChange={setMediaDurationMs}
         onEnded={() => reportEnded(track.id)}
       />

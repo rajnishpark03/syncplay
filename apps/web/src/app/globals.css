@@ -10,6 +10,10 @@
 html,
 body {
   @apply bg-base-950 text-white antialiased;
+  /* Nothing should ever scroll sideways — a single overflowing child used to
+     shift the whole page and clip text off the left edge on phones. */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 * {

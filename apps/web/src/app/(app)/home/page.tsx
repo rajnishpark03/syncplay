@@ -6,7 +6,7 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { StatusDot } from '@/components/ui/status-dot';
 import { CreateJoinRoom } from '@/components/room/create-join-room';
 import { useAuth } from '@/providers/auth-provider';
-import { useSyncEngine } from '@/hooks/use-sync-engine';
+import { useSync } from '@/providers/sync-provider';
 import { useRoomStore } from '@/lib/room-store';
 import { api } from '@/lib/api';
 import type { ActivityType } from '@orbit/shared';
@@ -28,7 +28,7 @@ const ACTIVITY_ICON: Record<ActivityType, string> = {
 
 export default function HomePage() {
   const { profile } = useAuth();
-  const { members, mediaState, leaveRoom, deviceId } = useSyncEngine();
+  const { members, mediaState, leaveRoom, deviceId } = useSync();
   const currentRoom = useRoomStore((s) => s.currentRoom);
 
   const { data: activity } = useQuery({

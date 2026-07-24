@@ -16,7 +16,7 @@ import {
   tokensHome,
 } from '@/lib/games/ludo-logic';
 import { useGame } from '@/hooks/use-game';
-import { useSyncEngine } from '@/hooks/use-sync-engine';
+import { useSync } from '@/providers/sync-provider';
 
 export default function GamesPage() {
   return (
@@ -27,7 +27,7 @@ export default function GamesPage() {
 }
 
 function GamesSection() {
-  const { members, deviceId } = useSyncEngine();
+  const { members, deviceId } = useSync();
   const { session, mySeat, isMyTurn, startGame, sendMove, endGame } = useGame();
 
   function handleStart(gameId: GameId) {

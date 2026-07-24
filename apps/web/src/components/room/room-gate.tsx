@@ -6,6 +6,18 @@ import { CreateJoinRoom } from './create-join-room';
 
 export function RoomGate({ children }: { children: React.ReactNode }) {
   const currentRoom = useRoomStore((s) => s.currentRoom);
+  const hydrated = useRoomStore((s) => s.hydrated);
+
+  // Until the saved room is read back from localStorage we don't know whether
+  // there's a session — showing "No active session" first would flash the
+  // wrong screen on every load.
+  if (!hydrated) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-accent" />
+      </div>
+    );
+  }
 
   if (!currentRoom) {
     return (

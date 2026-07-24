@@ -21,6 +21,8 @@ export interface MediaPlayerHandle {
 interface Props {
   track: TrackInfo | null;
   isVideo: boolean;
+  /** Room playback state — used to cover YouTube's own paused-state UI. */
+  paused?: boolean;
   onDurationChange: (ms: number) => void;
   onEnded: () => void;
 }
@@ -39,7 +41,7 @@ interface Props {
  * starts with sound, because the page then has sticky user activation.
  */
 export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPlayer(
-  { track, isVideo, onDurationChange, onEnded },
+  { track, isVideo, paused, onDurationChange, onEnded },
   ref,
 ) {
   const onEndedRef = useRef(onEnded);
@@ -106,6 +108,10 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
         if (cancelled || !ytContainerRef.current || ytPlayerRef.current) return;
         loadedVideoIdRef.current = track.sourceUrl;
         ytPlayerRef.current = new YT.Player(ytContainerRef.current, {
+          // Privacy-enhanced host: playback isn't attributed to the viewer's
+          // YouTube account, so two devices watching the same video no longer
+          // trip YouTube's "your account is being used on another device".
+          host: 'https://www.youtube-nocookie.com',
           videoId: track.sourceUrl,
           // controls: 0 hides YouTube's own play/pause bar and title/info
           // overlay entirely — Orbit's own controls below the video are
@@ -206,10 +212,24 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
       {isYoutube ? (
         <div className="relative aspect-video w-full overflow-hidden bg-black">
           <div ref={ytContainerRef} className="h-full w-full" />
-          {/* Swallows all pointer events so YouTube's own hover UI (title bar,
-              share / watch-later buttons, its play overlay) never appears —
+          {/* Swallows all pointer events so YouTube's hover UI never appears —
               playback is driven entirely by Orbit's controls below. */}
-          <div className="absolute inset-0 cursor-default" aria-hidden />
+          <div className="absolute inset-0 z-10 cursor-default" aria-hidden />
+          {/* While paused, YouTube draws its own "More videos" / share / logo
+              panel on top of the frame. An opaque cover keeps the screen ours. */}
+          {paused && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-base-900">
+              {track?.artworkUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={track.artworkUrl} alt="" className="h-full w-full object-cover opacity-40" />
+              ) : null}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-6 text-center">
+                <span className="text-3xl">⏸</span>
+                <p className="line-clamp-2 text-sm font-medium text-white/90">{track?.title}</p>
+                <p className="text-xs text-white/40">Paused</p>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div

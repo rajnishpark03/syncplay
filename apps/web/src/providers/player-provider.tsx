@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { MediaPlayerHandle } from '@/components/sync/media-player';
-import { useSyncEngine } from '@/hooks/use-sync-engine';
+import { useSync } from '@/providers/sync-provider';
 
 /** Where the big player should be drawn, in viewport coordinates. */
 export interface PlayerSlot {
@@ -45,7 +45,7 @@ const DRIFT_CHECK_INTERVAL_MS = 800;
  * actually interrupt playback.
  */
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
-  const { mediaState, expectedPositionMs } = useSyncEngine();
+  const { mediaState, expectedPositionMs } = useSync();
   const playerRef = useRef<MediaPlayerHandle>(null);
   const seekingRef = useRef(false);
   const lastCorrectionAtRef = useRef(0);

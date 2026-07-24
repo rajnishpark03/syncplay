@@ -20,6 +20,8 @@ interface YTNamespace {
   Player: new (
     el: HTMLElement,
     options: {
+      /** Privacy-enhanced host — the embed then ignores the signed-in session. */
+      host?: string;
       videoId: string;
       playerVars?: Record<string, number | string>;
       events?: {
