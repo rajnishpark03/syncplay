@@ -287,16 +287,25 @@ function SyncSession() {
           <GlassCard hoverable={false}>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white/70">Up Next ({mediaState.queue.length})</h3>
-              {mediaState.queue.length > 0 && (
-                <button className="text-xs text-accent-soft hover:text-accent" onClick={skip}>
-                  Skip →
+              <div className="flex items-center gap-3">
+                {mediaState.queue.length > 0 && (
+                  <button className="text-xs text-accent-soft hover:text-accent" onClick={skip}>
+                    Skip →
+                  </button>
+                )}
+                <button
+                  className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-white transition hover:bg-accent-soft"
+                  onClick={() => setShowLoader(true)}
+                >
+                  + Add
                 </button>
-              )}
+              </div>
             </div>
 
             {mediaState.queue.length === 0 ? (
               <p className="text-xs text-white/30">
-                Queue is empty. Use <span className="text-white/50">+ Add / change media</span> → “Add to queue” to line up songs.
+                Queue is empty. Tap <span className="text-white/50">+ Add</span> to line up songs — they play automatically
+                one after another.
               </p>
             ) : (
               <div className="space-y-2">
