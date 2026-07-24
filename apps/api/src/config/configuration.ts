@@ -25,6 +25,7 @@ export default () => ({
     provider: process.env.EMAIL_PROVIDER ?? 'smtp',
     from: process.env.EMAIL_FROM ?? 'SyncPlay <no-reply@syncplay.app>',
     resendApiKey: process.env.RESEND_API_KEY,
+    brevoApiKey: process.env.BREVO_API_KEY,
     smtp: {
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT ?? '587', 10),

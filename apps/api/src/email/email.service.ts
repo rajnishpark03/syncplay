@@ -29,6 +29,15 @@ export class EmailService {
     const text = `Your SyncPlay verification code is ${code}. It expires in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
     const html = this.otpHtml(code, minutes);
 
+    // Brevo is preferred when configured: single-sender verification (no
+    // domain needed) means OTPs can go to ANY recipient, over HTTPS.
+    const brevoKey = this.config.get<string>('email.brevoApiKey');
+    if (brevoKey) {
+      await this.sendViaBrevo(brevoKey, { from, to, subject, text, html });
+      this.logger.log(`OTP email sent to ${to} via Brevo`);
+      return;
+    }
+
     const resendKey = this.config.get<string>('email.resendApiKey');
     if (resendKey) {
       await this.sendViaResend(resendKey, { from, to, subject, text, html });
@@ -40,6 +49,34 @@ export class EmailService {
     if (!transporter) throw new Error('Email transport not configured');
     await transporter.sendMail({ from, to, subject, text, html });
     this.logger.log(`OTP email sent to ${to} via SMTP`);
+  }
+
+  /** Parses a `Name <email@x>` or bare `email@x` string into Brevo's sender shape. */
+  private parseSender(from: string): { email: string; name?: string } {
+    const match = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(from);
+    if (match) return { name: match[1] || undefined, email: match[2] };
+    return { email: from.trim() };
+  }
+
+  private async sendViaBrevo(
+    apiKey: string,
+    msg: { from: string; to: string; subject: string; text: string; html: string },
+  ): Promise<void> {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        sender: this.parseSender(msg.from),
+        to: [{ email: msg.to }],
+        subject: msg.subject,
+        htmlContent: msg.html,
+        textContent: msg.text,
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Brevo API error ${res.status}: ${body}`);
+    }
   }
 
   private async sendViaResend(
