@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
 import { useScreenShare } from '@/hooks/use-screen-share';
+import { exitFullscreen, isFullscreenActive, onFullscreenChange, toggleFullscreen } from '@/lib/fullscreen';
 
 export function ScreenSharePanel({ otherDeviceIds }: { otherDeviceIds: string[] }) {
   const { status, localStream, remoteStream, startSharing, stopSharing } = useScreenShare(otherDeviceIds);
@@ -10,16 +11,11 @@ export function ScreenSharePanel({ otherDeviceIds }: { otherDeviceIds: string[] 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteWrapRef = useRef<HTMLDivElement>(null);
   const [remoteMuted, setRemoteMuted] = useState(true);
+  const [fullscreen, setFullscreen] = useState(false);
 
-  function enterFullscreen(el: HTMLElement | null, video: HTMLVideoElement | null) {
-    if (!el) return;
-    // iOS Safari only allows fullscreen on the <video> element itself.
-    const iosVideo = video as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
-    const target = el as HTMLElement & { webkitRequestFullscreen?: () => void };
-    if (target.requestFullscreen) target.requestFullscreen().catch(() => undefined);
-    else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
-    else if (iosVideo?.webkitEnterFullscreen) iosVideo.webkitEnterFullscreen();
-  }
+  // Mirror the document's fullscreen state so Esc / the system back gesture
+  // also flip the button back.
+  useEffect(() => onFullscreenChange(() => setFullscreen(isFullscreenActive())), []);
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
@@ -73,14 +69,29 @@ export function ScreenSharePanel({ otherDeviceIds }: { otherDeviceIds: string[] 
 
       {/* Watching someone else's screen */}
       {remoteStream && (
-        <div ref={remoteWrapRef} className="relative mt-2 overflow-hidden rounded-xl bg-black">
+        <div
+          ref={remoteWrapRef}
+          className={
+            fullscreen
+              ? 'relative flex h-full w-full items-center justify-center bg-black'
+              : 'relative mt-2 overflow-hidden rounded-xl bg-black'
+          }
+        >
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
             muted={remoteMuted}
-            className="aspect-video w-full bg-black object-contain"
+            className={fullscreen ? 'h-full w-full bg-black object-contain' : 'aspect-video w-full bg-black object-contain'}
           />
+          {fullscreen && (
+            <button
+              onClick={exitFullscreen}
+              className="glass absolute right-4 top-4 z-[60] rounded-full px-3 py-1.5 text-xs text-white/90"
+            >
+              ✕ Exit fullscreen
+            </button>
+          )}
           <div className="absolute bottom-3 right-3 flex gap-2">
             {remoteMuted && (
               <button
@@ -94,11 +105,11 @@ export function ScreenSharePanel({ otherDeviceIds }: { otherDeviceIds: string[] 
               </button>
             )}
             <button
-              onClick={() => enterFullscreen(remoteWrapRef.current, remoteVideoRef.current)}
+              onClick={() => toggleFullscreen(remoteWrapRef.current, remoteVideoRef.current)}
               className="glass rounded-full px-3 py-1.5 text-xs text-white/90"
-              aria-label="Fullscreen"
+              aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
             >
-              ⛶ Fullscreen
+              {fullscreen ? '✕ Exit' : '⛶ Fullscreen'}
             </button>
           </div>
         </div>

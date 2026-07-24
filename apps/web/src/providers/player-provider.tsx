@@ -3,13 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { MediaPlayerHandle } from '@/components/sync/media-player';
 import { useSync } from '@/providers/sync-provider';
-
-/** Vendor-prefixed fullscreen bits that TypeScript's lib doesn't declare. */
-type FsDocument = Document & {
-  webkitFullscreenElement?: Element | null;
-  webkitExitFullscreen?: () => Promise<void> | void;
-};
-type FsElement = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
+import { isFullscreenActive, onFullscreenChange, toggleFullscreen as toggleFullscreen$ } from '@/lib/fullscreen';
 
 /** Where the big player should be drawn, in viewport coordinates. */
 export interface PlayerSlot {
@@ -68,32 +62,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   // Track fullscreen from the document, so the Esc key / native exit button
   // keep our UI in sync rather than only our own toggle.
-  useEffect(() => {
-    const onChange = () =>
-      setIsFullscreen(Boolean(document.fullscreenElement || (document as FsDocument).webkitFullscreenElement));
-    document.addEventListener('fullscreenchange', onChange);
-    document.addEventListener('webkitfullscreenchange', onChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', onChange);
-      document.removeEventListener('webkitfullscreenchange', onChange);
-    };
-  }, []);
+  useEffect(() => onFullscreenChange(() => setIsFullscreen(isFullscreenActive())), []);
 
   const toggleFullscreen = useCallback(() => {
-    const doc = document as FsDocument;
-    if (doc.fullscreenElement || doc.webkitFullscreenElement) {
-      (doc.exitFullscreen?.() ?? doc.webkitExitFullscreen?.())?.catch?.(() => undefined);
-      return;
-    }
-    const el = containerRef.current as FsElement | null;
-    if (!el) return;
-    const request = el.requestFullscreen?.bind(el) ?? el.webkitRequestFullscreen?.bind(el);
-    if (request) {
-      Promise.resolve(request()).catch(() => undefined);
-    } else {
-      // iOS Safari only allows fullscreen on the <video> element itself.
-      playerRef.current?.enterNativeFullscreen?.();
-    }
+    // Shared helper: also rotates phones to landscape so the video fills the screen.
+    void toggleFullscreen$(containerRef.current);
   }, []);
 
   const provider = mediaState.track?.provider ?? 'direct';
