@@ -112,12 +112,12 @@ function SyncSession() {
 
       {/* Camera on the left, player in the middle, queue on the right (desktop).
           On smaller screens these stack: player first, then queue, then camera. */}
-      <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px] xl:items-start">
-        <aside className="order-3 xl:order-1">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px] xl:items-start">
+        <aside className="order-3 min-w-0 xl:order-1">
           <CameraPanel memberNames={memberNames} />
         </aside>
 
-        <div className="order-1 space-y-6 xl:order-2">
+        <div className="order-1 min-w-0 space-y-6 xl:order-2">
       <GlassCard hoverable={false} className="overflow-hidden p-0">
         {/* The persistent player positions itself over this rectangle. */}
         <PlayerSlot className={mediaState.track ? 'aspect-video w-full' : 'hidden'} />
@@ -148,7 +148,7 @@ function SyncSession() {
               </div>
             </div>
 
-            <div className="mt-5 flex items-center justify-center gap-4">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <button className="btn-icon" onClick={() => seek(Math.max(0, localPositionMs - 10000))} aria-label="Back 10s">
                 <BackIcon />
               </button>
@@ -177,7 +177,7 @@ function SyncSession() {
               </button>
             </div>
 
-            <div className="mt-5 flex items-center justify-center gap-2">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
               {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
                 <button
                   key={rate}
@@ -205,7 +205,7 @@ function SyncSession() {
           <ScreenSharePanel otherDeviceIds={otherDeviceIds} />
         </div>
 
-        <aside className="order-2 xl:order-3">
+        <aside className="order-2 min-w-0 xl:order-3">
           <GlassCard hoverable={false}>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white/70">Up Next ({mediaState.queue.length})</h3>

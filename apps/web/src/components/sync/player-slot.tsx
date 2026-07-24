@@ -22,7 +22,11 @@ export function PlayerSlot({ className }: { className?: string }) {
     let frame = 0;
     const measure = () => {
       const r = el.getBoundingClientRect();
-      setSlot({ top: r.top, left: r.left, width: r.width, height: r.height });
+      // Clamp to the viewport: a transient over-wide measurement would
+      // otherwise paint the player past the right edge of a phone screen.
+      const maxWidth = document.documentElement.clientWidth;
+      const left = Math.max(0, Math.min(r.left, maxWidth));
+      setSlot({ top: r.top, left, width: Math.min(r.width, maxWidth - left), height: r.height });
     };
     // Coalesce to one measurement per frame — without this, scrolling on a
     // phone fires far more often than paint and the video visibly jitters.
