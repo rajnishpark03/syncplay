@@ -2,154 +2,173 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { GlassCard } from '@/components/ui/glass-card';
-import { StatusDot } from '@/components/ui/status-dot';
 import { CreateJoinRoom } from '@/components/room/create-join-room';
 import { RoomCodeChip } from '@/components/room/room-code-chip';
+import {
+  DevicesIcon,
+  FilmIcon,
+  GamepadIcon,
+  LinkIcon,
+  MicIcon,
+  MusicIcon,
+  ScreenIcon,
+  SparkleIcon,
+} from '@/components/ui/icons';
 import { useAuth } from '@/providers/auth-provider';
 import { useSync } from '@/providers/sync-provider';
 import { useRoomStore } from '@/lib/room-store';
 import { api } from '@/lib/api';
 import type { ActivityType } from '@orbit/shared';
 
-const ACTIVITY_ICON: Record<ActivityType, string> = {
-  device_connected: '🔗',
-  device_disconnected: '📴',
-  media_play: '▶️',
-  media_pause: '⏸️',
-  media_seek: '⏩',
-  media_track_changed: '🎵',
-  voice_started: '🎙️',
-  voice_ended: '🔇',
-  screen_share_started: '🖥️',
-  screen_share_stopped: '🖥️',
-  game_started: '🎮',
-  game_ended: '🏁',
+const ACTIVITY_ICON: Record<ActivityType, React.ComponentType<{ className?: string }>> = {
+  device_connected: LinkIcon,
+  device_disconnected: LinkIcon,
+  media_play: MusicIcon,
+  media_pause: MusicIcon,
+  media_seek: MusicIcon,
+  media_track_changed: MusicIcon,
+  voice_started: MicIcon,
+  voice_ended: MicIcon,
+  screen_share_started: ScreenIcon,
+  screen_share_stopped: ScreenIcon,
+  game_started: GamepadIcon,
+  game_ended: GamepadIcon,
 };
+
+const SHORTCUTS = [
+  { href: '/sync', label: 'Listen', hint: 'Music, in step', Icon: MusicIcon },
+  { href: '/sync', label: 'Watch', hint: 'Video together', Icon: FilmIcon },
+  { href: '/games', label: 'Play', hint: 'Chess & Ludo', Icon: GamepadIcon },
+  { href: '/profile', label: 'Devices', hint: 'Your sessions', Icon: DevicesIcon },
+];
+
+function greetingFor(hour: number) {
+  if (hour < 5) return 'Still up';
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function HomePage() {
   const { profile } = useAuth();
   const { members, mediaState, leaveRoom, deviceId } = useSync();
   const currentRoom = useRoomStore((s) => s.currentRoom);
+  const hydrated = useRoomStore((s) => s.hydrated);
 
   const { data: activity } = useQuery({
     queryKey: ['activity', currentRoom?.code ?? 'account'],
-    queryFn: () => (currentRoom ? api.roomActivity(currentRoom.code, 8) : api.activity(8)),
+    queryFn: () => (currentRoom ? api.roomActivity(currentRoom.code, 6) : api.activity(6)),
     refetchInterval: 15000,
   });
 
   const partner = members.find((m) => m.deviceId !== deviceId);
-  const firstName = profile?.name?.split(' ')[0] ?? profile?.email.split('@')[0];
+  const firstName = profile?.name?.split(' ')[0] ?? profile?.email.split('@')[0] ?? '';
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
-      <header>
-        <p className="text-sm text-white/40">Welcome back</p>
-        <h1 className="text-2xl font-semibold tracking-tight">{firstName}</h1>
+    <div className="mx-auto w-full max-w-2xl space-y-8">
+      <header className="pt-1">
+        <p className="text-sm text-white/35">{greetingFor(new Date().getHours())}</p>
+        <h1 className="text-3xl font-semibold capitalize tracking-tight">{firstName}</h1>
       </header>
 
-      {currentRoom ? (
-        <GlassCard hoverable={false} className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-white/35">You&rsquo;re in</p>
-            <h2 className="truncate text-lg font-semibold sm:text-xl">{currentRoom.name ?? 'Your session'}</h2>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <RoomCodeChip code={currentRoom.code} />
-              <span className="text-xs text-white/35">
-                {members.length} device{members.length === 1 ? '' : 's'} here
+      {/* The room is the hero of this screen; everything else supports it. */}
+      {!hydrated ? (
+        <div className="h-44 animate-pulse rounded-3xl bg-white/[0.03]" />
+      ) : currentRoom ? (
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-accent/20 via-white/[0.04] to-transparent p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Your room</p>
+              <h2 className="mt-1 truncate text-2xl font-semibold sm:text-3xl">{currentRoom.name ?? 'Your session'}</h2>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <RoomCodeChip code={currentRoom.code} />
+                <span className="inline-flex items-center gap-1.5 text-xs text-white/40">
+                  <span className={`h-1.5 w-1.5 rounded-full ${partner ? 'bg-mint' : 'bg-white/25'}`} />
+                  {partner ? `${partner.deviceName} is here` : 'Waiting for your partner'}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={leaveRoom}
+              className="flex-shrink-0 rounded-full px-3 py-1.5 text-xs text-white/45 transition hover:bg-white/10 hover:text-white/80"
+            >
+              Leave
+            </button>
+          </div>
+
+          {mediaState.track && (
+            <div className="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
+                {mediaState.track.artworkUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={mediaState.track.artworkUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <MusicIcon className="text-base text-white/50" />
+                )}
               </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm">{mediaState.track.title}</span>
+                <span className="block truncate text-xs text-white/35">
+                  {mediaState.state === 'playing' ? 'Playing now' : 'Paused'}
+                </span>
+              </span>
+              <Link href="/sync" className="flex-shrink-0 text-xs text-accent-soft transition hover:text-accent">
+                Open
+              </Link>
             </div>
-          </div>
-          <button className="btn-secondary flex-shrink-0 text-xs" onClick={leaveRoom}>
-            Leave
-          </button>
-        </GlassCard>
+          )}
+        </section>
       ) : (
-        <GlassCard hoverable={false}>
-          <h3 className="mb-1 font-semibold">Start a session</h3>
-          <p className="mb-4 text-xs text-white/40">Create a room and share the code, or join one your partner started.</p>
-          <CreateJoinRoom compact />
-        </GlassCard>
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-center">
+          <SparkleIcon className="mx-auto mb-3 text-2xl text-accent-soft" />
+          <h2 className="text-lg font-semibold">Start a room</h2>
+          <p className="mx-auto mt-1 max-w-xs text-sm text-white/40">
+            Create one and share the code, or join the room your partner opened.
+          </p>
+          <div className="mt-5">
+            <CreateJoinRoom compact />
+          </div>
+        </section>
       )}
 
-      <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
-        <Link href="/sync">
-          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
-            <div className="flex flex-col justify-between h-full">
-              <span className="text-2xl">🎧</span>
-              <div>
-                <h3 className="font-semibold">Listen Together</h3>
-                <p className="text-xs text-white/40">Music, perfectly synced</p>
-              </div>
-            </div>
-          </GlassCard>
-        </Link>
-        <Link href="/sync">
-          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
-            <div className="flex flex-col justify-between h-full">
-              <span className="text-2xl">🎬</span>
-              <div>
-                <h3 className="font-semibold">Watch Together</h3>
-                <p className="text-xs text-white/40">Video &amp; movies in sync</p>
-              </div>
-            </div>
-          </GlassCard>
-        </Link>
-        <Link href="/voice">
-          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
-            <div className="flex flex-col justify-between h-full">
-              <span className="text-2xl">🎙️</span>
-              <div>
-                <h3 className="font-semibold">Voice Chat</h3>
-                <p className="text-xs text-white/40">Talk while you sync</p>
-              </div>
-            </div>
-          </GlassCard>
-        </Link>
-        <Link href="/profile">
-          <GlassCard className="h-36 justify-between overflow-hidden sm:h-40">
-            <div className="flex h-full flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-2xl">📱</span>
-                <StatusDot online={!!partner} />
-              </div>
-              <div>
-                <h3 className="font-semibold">Connected Device</h3>
-                <p className="truncate text-xs text-white/40">{partner ? partner.deviceName : 'No one in your session'}</p>
-              </div>
-            </div>
-          </GlassCard>
-        </Link>
-      </div>
+      {/* Compact shortcuts instead of four oversized identical tiles. */}
+      <section className="grid min-w-0 grid-cols-2 gap-2.5 sm:grid-cols-4">
+        {SHORTCUTS.map(({ href, label, hint, Icon }) => (
+          <Link
+            key={label}
+            href={href}
+            className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-3.5 transition hover:border-white/15 hover:bg-white/[0.05]"
+          >
+            <Icon className="text-lg text-accent-soft" />
+            <p className="mt-2.5 text-sm font-medium">{label}</p>
+            <p className="truncate text-xs text-white/35">{hint}</p>
+          </Link>
+        ))}
+      </section>
 
-      {mediaState.track && (
-        <GlassCard className="flex items-center gap-4">
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-white/5 text-2xl">
-            {mediaState.track.mediaType === 'music' ? '🎵' : '🎬'}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{mediaState.track.title}</p>
-            <p className="truncate text-xs text-white/40">{mediaState.track.subtitle ?? 'Now playing'}</p>
-          </div>
-          <span className="rounded-full bg-white/5 px-3 py-1 text-xs capitalize text-white/60">{mediaState.state}</span>
-        </GlassCard>
-      )}
-
-      <GlassCard hoverable={false}>
-        <h3 className="mb-4 font-semibold">Recent Activity</h3>
-        <div className="space-y-3">
-          {!activity?.length && <p className="text-sm text-white/40">No activity yet — start playing something together.</p>}
-          {activity?.map((entry) => (
-            <div key={entry.id} className="flex items-center gap-3">
-              <span className="text-lg">{ACTIVITY_ICON[entry.type] ?? '•'}</span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm text-white/80">{entry.message}</p>
-                <p className="text-xs text-white/30">{new Date(entry.createdAt).toLocaleTimeString()}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </GlassCard>
+      <section>
+        <h3 className="mb-3 text-[11px] uppercase tracking-[0.18em] text-white/35">Recent</h3>
+        {activity?.length ? (
+          <ul className="space-y-3">
+            {activity.map((entry) => {
+              const Icon = ACTIVITY_ICON[entry.type] ?? LinkIcon;
+              return (
+                <li key={entry.id} className="flex items-center gap-3">
+                  <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white/[0.06]">
+                    <Icon className="text-xs text-white/50" />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm text-white/70">{entry.message}</span>
+                  <time className="flex-shrink-0 text-xs text-white/25">
+                    {new Date(entry.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                  </time>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-white/30">Nothing yet — play something together.</p>
+        )}
+      </section>
     </div>
   );
 }

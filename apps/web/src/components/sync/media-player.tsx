@@ -3,6 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { TrackInfo } from '@orbit/shared';
 import { loadYouTubeIframeApi, YTPlayer } from '@/lib/youtube-iframe-api';
+import { MusicIcon } from '@/components/ui/icons';
 
 /** Remembers "I want sound" so you only ever tap unmute once. */
 const SOUND_PREF_KEY = 'orbit:sound';
@@ -230,7 +231,7 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
                 <img src={track.artworkUrl} alt="" className="h-full w-full object-cover opacity-40" />
               ) : null}
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-6 text-center">
-                <span className="text-3xl">⏸</span>
+                
                 <p className="line-clamp-2 text-sm font-medium text-white/90">{track?.title}</p>
                 <p className="text-xs text-white/40">Paused</p>
               </div>
@@ -258,11 +259,11 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, Props>(function MediaPl
             // eslint-disable-next-line @next/next/no-img-element
             <img src={track.artworkUrl} alt="" className="h-40 w-40 rounded-2xl object-cover shadow-card" />
           ) : (
-            <span className="text-6xl">🎵</span>
+            <MusicIcon className="text-6xl text-white/30" />
           ))}
           {!track && (
             <div className="flex h-full min-h-[220px] w-full flex-col items-center justify-center gap-3 text-white/40">
-              <span className="text-4xl">🎧</span>
+              <MusicIcon className="text-4xl text-white/25" />
               <p className="text-sm">Nothing playing yet</p>
             </div>
           )}

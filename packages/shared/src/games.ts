@@ -33,7 +33,6 @@ export interface GameSession {
 export interface GameMeta {
   id: GameId;
   name: string;
-  emoji: string;
   description: string;
   minPlayers: number;
   maxPlayers: number;
@@ -43,16 +42,14 @@ export const GAME_CATALOG: GameMeta[] = [
   {
     id: 'chess',
     name: 'Chess',
-    emoji: '♟️',
-    description: 'Full rules — castling, en passant, promotion, check & checkmate.',
+    description: 'Full rules — castling, en passant, promotion, checkmate.',
     minPlayers: 2,
     maxPlayers: 2,
   },
   {
     id: 'ludo',
     name: 'Ludo',
-    emoji: '🎲',
-    description: 'Classic Ludo — roll a 6 to start, capture, safe squares, race home.',
+    description: 'Roll a six to start, capture, race home.',
     minPlayers: 2,
     maxPlayers: 4,
   },

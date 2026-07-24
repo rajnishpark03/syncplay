@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { GAME_CATALOG, GameId, GamePlayer } from '@orbit/shared';
 import { GlassCard } from '@/components/ui/glass-card';
+import { ChessIcon, DiceIcon } from '@/components/ui/icons';
 import { RoomGate } from '@/components/room/room-gate';
 import { ChessBoard, ChessState, chessStatus, createInitialChessState } from '@/components/games/chess-board';
 import { LudoBoard } from '@/components/games/ludo-board';
@@ -63,7 +64,11 @@ function GamesSection() {
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2">
           {GAME_CATALOG.map((game) => (
             <GlassCard key={game.id} hoverable={false} className="flex flex-col gap-3">
-              <span className="text-3xl">{game.emoji}</span>
+              {game.id === 'chess' ? (
+                <ChessIcon className="text-2xl text-accent-soft" />
+              ) : (
+                <DiceIcon className="text-2xl text-accent-soft" />
+              )}
               <div>
                 <h3 className="font-semibold">{game.name}</h3>
                 <p className="text-xs text-white/40">{game.description}</p>
@@ -83,9 +88,7 @@ function GamesSection() {
           ))}
         </div>
 
-        <p className="text-xs text-white/30">
-          Music keeps playing while you play — everything runs at the same time.
-        </p>
+        <p className="text-xs text-white/30">Music keeps playing while you play.</p>
       </div>
     );
   }
@@ -230,7 +233,7 @@ function LudoSection({
         <div>
           <p className="text-sm">
             {finished
-              ? `🏆 ${state.winnerSeat === mySeat ? 'You win!' : `${turnName} wins!`}`
+              ? `${state.winnerSeat === mySeat ? 'You win' : `${turnName} wins`}`
               : isMyTurn
                 ? dice === null
                   ? 'Your turn — roll the dice'
@@ -247,14 +250,14 @@ function LudoSection({
           className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-bold text-base-900 transition disabled:opacity-30"
           aria-label="Roll dice"
         >
-          {rolling ? '🎲' : (dice ?? '🎲')}
+          {rolling || dice === null ? <DiceIcon className="text-xl" /> : dice}
         </button>
       </GlassCard>
 
       <LudoBoard state={state} mySeat={mySeat} isMyTurn={isMyTurn && !finished} dice={dice} onPickToken={handlePickToken} />
 
       <p className="text-center text-xs text-white/30">
-        Roll a 6 to bring a token out. Land on someone to send them home. Exact roll to finish. Star squares are safe.
+        Six to leave base · land on a token to send it home · exact roll to finish · stars are safe.
       </p>
     </div>
   );

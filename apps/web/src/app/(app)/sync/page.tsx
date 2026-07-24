@@ -11,6 +11,7 @@ import { useSync } from '@/providers/sync-provider';
 import { usePlayer } from '@/providers/player-provider';
 import { useRoomStore } from '@/lib/room-store';
 import { RoomCodeChip } from '@/components/room/room-code-chip';
+import { FilmIcon, MusicIcon, PlusIcon } from '@/components/ui/icons';
 import { extractYouTubeId, fetchYouTubeOEmbed } from '@/lib/youtube';
 import type { MediaProvider, MediaType, TrackInfo } from '@orbit/shared';
 
@@ -201,7 +202,7 @@ function SyncSession() {
           {mediaState.track && (
             <div className="flex gap-4">
               <button className="text-sm text-white/40 hover:text-white/70" onClick={() => setShowLoader(true)}>
-                + Add / change media
+                Add or change media
               </button>
             </div>
           )}
@@ -220,10 +221,11 @@ function SyncSession() {
                   </button>
                 )}
                 <button
-                  className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-white transition hover:bg-accent-soft"
+                  className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white transition hover:bg-accent-soft"
                   onClick={() => setShowLoader(true)}
                 >
-                  + Add
+                  <PlusIcon className="text-sm" />
+                  Add
                 </button>
               </div>
             </div>
@@ -256,8 +258,10 @@ function SyncSession() {
                           {t.artworkUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={t.artworkUrl} alt="" className="h-full w-full object-cover" />
+                          ) : t.mediaType === 'music' ? (
+                            <MusicIcon className="text-sm text-white/40" />
                           ) : (
-                            <span>{t.mediaType === 'music' ? '🎵' : '🎬'}</span>
+                            <FilmIcon className="text-sm text-white/40" />
                           )}
                         </span>
                         <span className="min-w-0 flex-1">

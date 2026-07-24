@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
 import { useVoice } from '@/providers/voice-provider';
+import { MicIcon } from '@/components/ui/icons';
 
 function VideoTile({ stream, label, muted, mirrored }: { stream: MediaStream; label: string; muted: boolean; mirrored?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -35,7 +36,7 @@ function VideoTile({ stream, label, muted, mirrored }: { stream: MediaStream; la
       />
       {!hasVideo && (
         <div className="flex aspect-[3/4] w-full items-center justify-center bg-gradient-to-br from-accent/20 to-base-800">
-          <span className="text-3xl">🎧</span>
+          <MicIcon className="text-2xl text-white/25" />
         </div>
       )}
       <span className="absolute bottom-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[11px] text-white/90">{label}</span>
