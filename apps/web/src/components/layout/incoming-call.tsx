@@ -17,9 +17,12 @@ export function IncomingCall() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="fixed left-1/2 top-4 z-50 w-[min(92vw,380px)] -translate-x-1/2"
+          // Centred with auto margins, NOT a translate: framer-motion writes its
+          // own `transform` for the entry animation, which would wipe out a
+          // Tailwind -translate-x-1/2 and shove the banner off-screen.
+          className="fixed inset-x-3 top-3 z-50 mx-auto max-w-[380px]"
         >
-          <div className="glass-card flex items-center gap-3 p-3 shadow-glow">
+          <div className="glass-card flex items-center gap-2.5 p-2.5 shadow-glow sm:gap-3 sm:p-3">
             <div className="relative flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-muted">
               <span className="absolute inset-0 animate-ping rounded-full bg-accent/40" />
               <span className="relative text-lg">📞</span>
@@ -30,14 +33,14 @@ export function IncomingCall() {
             </div>
             <button
               onClick={declineCall}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm transition hover:bg-white/20"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-sm transition hover:bg-white/20"
               aria-label="Decline"
             >
               ✕
             </button>
             <button
               onClick={acceptCall}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-mint text-lg text-black transition hover:brightness-110"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-mint text-lg text-black transition hover:brightness-110"
               aria-label="Accept call"
             >
               📞
