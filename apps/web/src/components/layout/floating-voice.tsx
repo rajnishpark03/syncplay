@@ -39,7 +39,7 @@ function FloatingTile({ stream, label, mirrored }: { stream: MediaStream; label:
         autoPlay
         playsInline
         muted
-        className={`h-32 w-24 bg-base-800 object-cover md:h-36 md:w-28 ${mirrored ? '-scale-x-100' : ''}`}
+        className={`h-20 w-16 bg-base-800 object-cover sm:h-24 sm:w-20 md:h-32 md:w-24 ${mirrored ? '-scale-x-100' : ''}`}
       />
       <span className="absolute bottom-1 left-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white/90">
         {label}
@@ -70,7 +70,7 @@ export function FloatingVoice() {
           every screen — not just the Sync page. Stacked above the buttons so
           they stay on-screen (the bar is already pinned near the bottom). */}
       {inCall && (
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-row-reverse items-end gap-2 md:flex-col md:items-end">
           {remotes.map(([peerId, stream]) => (
             <FloatingTile key={peerId} stream={stream} label="Partner" />
           ))}

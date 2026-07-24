@@ -34,7 +34,7 @@ export function PersistentPlayer() {
         inSlot
           ? 'fixed z-30 overflow-hidden rounded-2xl'
           : // Mini player: small, out of the way, still playing.
-            'fixed bottom-24 left-4 z-30 w-40 overflow-hidden rounded-2xl shadow-card ring-1 ring-white/10 md:bottom-6 md:left-24 md:w-52'
+            'fixed bottom-24 left-3 z-30 w-32 overflow-hidden rounded-xl shadow-card ring-1 ring-white/10 sm:w-40 md:bottom-6 md:left-24 md:w-52'
       }
       style={style}
     >

@@ -103,7 +103,7 @@ export function LudoBoard({ state, mySeat, isMyTurn, dice, onPickToken }: Props)
   };
 
   return (
-    <div className="mx-auto w-full max-w-[min(92vw,560px)]">
+    <div className="mx-auto w-full max-w-[min(97vw,560px)]">
       <div
         className="grid aspect-square w-full overflow-hidden rounded-2xl bg-base-900 ring-1 ring-white/10"
         style={{ gridTemplateColumns: 'repeat(15, 1fr)', gridTemplateRows: 'repeat(15, 1fr)' }}
@@ -132,7 +132,7 @@ export function LudoBoard({ state, mySeat, isMyTurn, dice, onPickToken }: Props)
             return (
               <div key={key} className={`relative ${cls} ring-[0.5px] ring-black/10`}>
                 {ringIndex !== undefined && SAFE_SQUARES.has(ringIndex) && tokens.length === 0 && (
-                  <span className="absolute inset-0 flex items-center justify-center text-[8px] text-black/40">★</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-[7px] text-black/40 sm:text-[9px]">★</span>
                 )}
                 {tokens.length > 0 && (
                   <div className="absolute inset-0 flex flex-wrap items-center justify-center gap-[1px] p-[1px]">
@@ -145,7 +145,7 @@ export function LudoBoard({ state, mySeat, isMyTurn, dice, onPickToken }: Props)
                           disabled={!canMove}
                           aria-label={`${COLOURS[t.colour]} token ${t.index + 1}`}
                           className={`rounded-full ${COLOUR_CLASS[t.colour]} ring-1 ring-black/40 ${
-                            tokens.length > 1 ? 'h-[42%] w-[42%]' : 'h-[70%] w-[70%]'
+                            tokens.length > 1 ? 'h-[44%] w-[44%]' : 'h-[76%] w-[76%]'
                           } ${canMove ? 'animate-pulse ring-2 ring-white' : ''}`}
                         />
                       );

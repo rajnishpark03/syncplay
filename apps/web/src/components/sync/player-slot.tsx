@@ -17,18 +17,26 @@ export function PlayerSlot({ className }: { className?: string }) {
     const el = ref.current;
     if (!el) return;
 
-    const publish = () => {
+    let frame = 0;
+    const measure = () => {
       const r = el.getBoundingClientRect();
       setSlot({ top: r.top, left: r.left, width: r.width, height: r.height });
     };
+    // Coalesce to one measurement per frame — without this, scrolling on a
+    // phone fires far more often than paint and the video visibly jitters.
+    const publish = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
 
-    publish();
+    measure();
     const ro = new ResizeObserver(publish);
     ro.observe(el);
     window.addEventListener('scroll', publish, true);
     window.addEventListener('resize', publish);
 
     return () => {
+      cancelAnimationFrame(frame);
       ro.disconnect();
       window.removeEventListener('scroll', publish, true);
       window.removeEventListener('resize', publish);

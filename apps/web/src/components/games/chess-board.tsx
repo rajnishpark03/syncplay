@@ -79,7 +79,7 @@ export function ChessBoard({ state, mySeat, isMyTurn, onMove }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[min(92vw,560px)]">
+    <div className="mx-auto w-full max-w-[min(97vw,560px)]">
       <div className="grid aspect-square w-full grid-cols-8 overflow-hidden rounded-2xl ring-1 ring-white/10">
         {ranks.map((rank) =>
           files.map((file) => {
@@ -104,7 +104,7 @@ export function ChessBoard({ state, mySeat, isMyTurn, onMove }: Props) {
                     className={`select-none leading-none ${
                       piece.color === 'w' ? 'text-white' : 'text-[#1a1016]'
                     }`}
-                    style={{ fontSize: 'clamp(20px, 6.2vw, 42px)', textShadow: '0 1px 2px rgba(0,0,0,.35)' }}
+                    style={{ fontSize: 'clamp(22px, 7.4vw, 42px)', textShadow: '0 1px 2px rgba(0,0,0,.35)' }}
                   >
                     {PIECES[`${piece.color}${piece.type}`]}
                   </span>
